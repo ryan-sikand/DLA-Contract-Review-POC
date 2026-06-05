@@ -3,12 +3,12 @@
     "ActivityDisplayName": null,
     "ActivityId": null,
     "Resource": "Connection",
-    "Key": "db8da68a-a9ec-4ae6-9f74-2960708f5812",
-    "Id": "db8da68a-a9ec-4ae6-9f74-2960708f5812",
+    "Key": "ab70558e-d6f2-4d3a-acbd-c1cf62bd4c04",
+    "Id": "ab70558e-d6f2-4d3a-acbd-c1cf62bd4c04",
     "Description": null,
     "Value": {
       "ConnectionId": {
-        "DefaultValue": "db8da68a-a9ec-4ae6-9f74-2960708f5812",
+        "DefaultValue": "ab70558e-d6f2-4d3a-acbd-c1cf62bd4c04",
         "IsExpression": false,
         "DisplayName": "Connection",
         "Description": "The connection to be used"

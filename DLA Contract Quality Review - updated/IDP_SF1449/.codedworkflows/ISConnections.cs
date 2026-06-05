@@ -19,6 +19,6 @@ namespace IDP_SF1449
         public DataServiceISConnections(ICodedWorkflowsServiceContainer container) => _container = container;
 
         public ConnectorConnection DefaultConnection =>
-            new("db8da68a-a9ec-4ae6-9f74-2960708f5812", "uipath-uipath-dataservice", _container);
+            new("ab70558e-d6f2-4d3a-acbd-c1cf62bd4c04", "uipath-uipath-dataservice", _container);
     }
 }

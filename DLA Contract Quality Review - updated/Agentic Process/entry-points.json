@@ -8,11 +8,59 @@
       "type": "ProcessOrchestration",
       "input": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "dd2579DocumentPath": {
+            "type": "string",
+            "description": "Storage bucket file path or file-name suffix for the single DD2579 document used as the primary 3-way match input."
+          }
+        },
+        "required": []
       },
       "output": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Strict JSON findings returned by the Contract Validation Agent."
+          },
+          "excelReportRowsJson": {
+            "type": "string",
+            "description": "Excel-ready findings rows as JSON for downstream reporting."
+          },
+          "excelFindingsFile": {
+            "$ref": "#/definitions/job-attachment"
+          }
+        },
+        "definitions": {
+          "job-attachment": {
+            "type": "object",
+            "properties": {
+              "ID": {
+                "type": "string",
+                "description": "Orchestrator attachment key"
+              },
+              "FullName": {
+                "type": "string",
+                "description": "File name"
+              },
+              "MimeType": {
+                "type": "string",
+                "description": "MIME type, e.g. \"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\""
+              },
+              "Metadata": {
+                "type": "object",
+                "description": "Dictionary<string, string> of metadata",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "ID"
+            ],
+            "x-uipath-resource-kind": "JobAttachment"
+          }
+        }
       },
       "displayName": "Start event"
     }
