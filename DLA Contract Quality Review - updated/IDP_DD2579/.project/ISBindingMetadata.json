@@ -1,0 +1,23 @@
+{
+  "DataService.DefaultConnection": {
+    "ActivityDisplayName": null,
+    "ActivityId": null,
+    "Resource": "Connection",
+    "Key": "db8da68a-a9ec-4ae6-9f74-2960708f5812",
+    "Id": "db8da68a-a9ec-4ae6-9f74-2960708f5812",
+    "Description": null,
+    "Value": {
+      "ConnectionId": {
+        "DefaultValue": "db8da68a-a9ec-4ae6-9f74-2960708f5812",
+        "IsExpression": false,
+        "DisplayName": "Connection",
+        "Description": "The connection to be used"
+      }
+    },
+    "Metadata": {
+      "UseConnectionService": "true",
+      "Connector": "uipath-uipath-dataservice",
+      "BindingsVersion": "2.2"
+    }
+  }
+}

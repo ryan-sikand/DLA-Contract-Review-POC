@@ -145,31 +145,13 @@
                 <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentRecordKey", contractBatchId &amp; "|DF_TR|" &amp; sampleFile.FileFullPath}, {"documentType", "DF_TR"}, {"sourceFilePath", sampleFile.FileFullPath}, {"sourceFileName", downloadedFile.GetName()}, {"extractionProjectName", "DLA_Contract_DF-TR"}, {"extractionProjectVersion", "12"}, {"validationState", "NotValidated"}, {"processingState", "Extracted"}, {"dftrDateSigned", If(dFTRDocumentData.Data.DateSigned Is Nothing OrElse dFTRDocumentData.Data.DateSigned.Value Is Nothing, "", dFTRDocumentData.Data.DateSigned.Value.ToString())}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
               </Assign.Value>
             </Assign>
-            <uda:CreateEntityRecord x:TypeArguments="uda:DefaultEntity" InputEntity="{x:Null}" InputEntityInFieldView="[New DefaultEntity()]" IsInRecordView="False" OutputEntity="{x:Null}" ScopeValue="{x:Null}" SolutionEntityKey="DLADataService" SolutionEntityName="DLA Data Service" VisibleDynamicPropertiesInfo="{x:Null}" ContinueOnError="False" DisplayName="Create DLA Data Service record" ExpansionDepth="2" sap2010:WorkflowViewState.IdRef="CreateEntityRecord_DFTR" TimeoutInMs="30000">
-              <uda:CreateEntityRecord.EntityId>
-                <InArgument x:TypeArguments="s:Guid">[New Guid("73b82488-f560-f111-8fcb-002248a16d28")]</InArgument>
-              </uda:CreateEntityRecord.EntityId>
-              <uda:CreateEntityRecord.State>
-                <udam:RecordState IsInRecordView="False" RequiredFieldCount="3">
-                  <udam:RecordState.SelectedFields>
-                    <scg:List x:TypeArguments="udam:DynamicEntityField" Capacity="12">
-                      <udam:DynamicEntityField Id="7db82488-f560-f111-8fcb-002248a16d28" IsRequired="True" Name="ContractBatchId"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">[contractBatchId]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="7eb82488-f560-f111-8fcb-002248a16d28" IsRequired="True" Name="DocumentRecordKey"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">[contractBatchId &amp; "|DF_TR|" &amp; sampleFile.FileFullPath]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="7fb82488-f560-f111-8fcb-002248a16d28" IsRequired="True" Name="DocumentType"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">["DF_TR"]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="80b82488-f560-f111-8fcb-002248a16d28" IsRequired="False" Name="SourceFilePath"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">[sampleFile.FileFullPath]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="81b82488-f560-f111-8fcb-002248a16d28" IsRequired="False" Name="SourceFileName"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">[downloadedFile.GetName()]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="82b82488-f560-f111-8fcb-002248a16d28" IsRequired="False" Name="ExtractionProjectName"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">["DLA_Contract_DF-TR"]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="83b82488-f560-f111-8fcb-002248a16d28" IsRequired="False" Name="ExtractionProjectVersion"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">["12"]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="84b82488-f560-f111-8fcb-002248a16d28" IsRequired="False" Name="ValidationState"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">["NotValidated"]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="85b82488-f560-f111-8fcb-002248a16d28" IsRequired="False" Name="ProcessingState"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">["Extracted"]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="86b82488-f560-f111-8fcb-002248a16d28" IsRequired="False" Name="ExtractedJson"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">[contractDataJson]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                      <udam:DynamicEntityField Id="87b82488-f560-f111-8fcb-002248a16d28" IsRequired="False" Name="AgentInputJson"><udam:DynamicEntityField.ArgumentValue><InArgument x:TypeArguments="x:String">[contractDataJson]</InArgument></udam:DynamicEntityField.ArgumentValue></udam:DynamicEntityField>
-                    </scg:List>
-                  </udam:RecordState.SelectedFields>
-                </udam:RecordState>
-              </uda:CreateEntityRecord.State>
-            </uda:CreateEntityRecord>
-            <Assign DisplayName="Set DF TR workflow output" sap2010:WorkflowViewState.IdRef="Assign_DFTR_Output">
+            <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="Persist DLA Data Service record" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_DFTR_DataService" UnSafe="False" WorkflowFileName="PersistDlaDataServiceRecord.cs">
+              <ui:InvokeWorkflowFile.Arguments>
+                <scg:Dictionary x:TypeArguments="x:String, Argument">
+                  <InArgument x:TypeArguments="x:String" x:Key="in_RecordJson">[contractDataJson]</InArgument>
+                </scg:Dictionary>
+              </ui:InvokeWorkflowFile.Arguments>
+            </ui:InvokeWorkflowFile>            <Assign DisplayName="Set DF TR workflow output" sap2010:WorkflowViewState.IdRef="Assign_DFTR_Output">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[out_ContractDataJson]</OutArgument>
               </Assign.To>

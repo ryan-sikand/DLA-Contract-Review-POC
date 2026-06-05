@@ -7,6 +7,7 @@
   "dependencies": {
     "UiPath.DataService.Activities": "26.4.5-preview",
     "UiPath.DocumentUnderstanding.Activities": "3.2.0-preview",
+    "UiPath.IntegrationService.Activities": "1.27.0-beta.20260529.5",
     "UiPath.System.Activities": "26.4.1-preview",
     "UiPath.WebAPI.Activities": "2.5.0-preview"
   },
