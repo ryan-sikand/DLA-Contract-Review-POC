@@ -1,0 +1,6 @@
+{
+  "ProjectType": "Process",
+  "Name": "IDP_DF_TR",
+  "Description": "",
+  "MainFile": "Main.xaml"
+}

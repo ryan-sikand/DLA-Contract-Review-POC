@@ -1,0 +1,18 @@
+{
+  "$resourceType": "context",
+  "id": "b9f89242-8124-4f63-8e83-70dfd25abea9",
+  "referenceKey": null,
+  "name": "DLA Data Service",
+  "description": "Data Service records populated by the DLA Contract Quality Review DU workflows.",
+  "contextType": "datafabricentityset",
+  "entitySet": [
+    {
+      "id": "73b82488-f560-f111-8fcb-002248a16d28",
+      "referenceKey": "DLADataService",
+      "name": "DLADataService",
+      "folderId": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a",
+      "folderDisplayName": "DLA Contract Quality Review POC",
+      "description": "Authoritative contract quality review records populated from DU extraction and consumed by the Contract Validation Agent."
+    }
+  ]
+}

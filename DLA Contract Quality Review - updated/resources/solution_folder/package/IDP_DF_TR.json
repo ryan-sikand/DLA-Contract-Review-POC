@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "IDP_DF_TR",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "e927b2f1-e7f6-48f8-b8eb-6a48903b0386",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "IDP_DF_TR"
+    },
+    "locks": [],
+    "key": "be58437c-af0c-4b32-bb35-57f30bdd5daf",
+    "files": []
+  }
+}

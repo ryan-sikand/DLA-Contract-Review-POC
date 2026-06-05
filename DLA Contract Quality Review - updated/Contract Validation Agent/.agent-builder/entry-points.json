@@ -1,0 +1,30 @@
+{
+  "$schema": "https://cloud.uipath.com/draft/2024-12/entry-point",
+  "$id": "entry-points.json",
+  "entryPoints": [
+    {
+      "filePath": "/content/agent.json",
+      "type": "agent",
+      "uniqueId": "bde5bfec-144d-48bc-991f-19576a1a80ee",
+      "input": {
+        "type": "object",
+        "properties": {
+          "contractDataJson": {
+            "type": "string",
+            "description": "Normalized JSON payload assembled from DLADataService records for a single contract review package."
+          }
+        },
+        "required": []
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Output content"
+          }
+        }
+      }
+    }
+  ]
+}

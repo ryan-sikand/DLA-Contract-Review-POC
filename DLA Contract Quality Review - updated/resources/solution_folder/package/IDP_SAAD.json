@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "IDP_SAAD",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "e62e24fa-fca8-4911-85ba-8884f6d5670e",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "IDP_SAAD"
+    },
+    "locks": [],
+    "key": "7c64e636-b1c2-4d97-a67a-e0ed744168cf",
+    "files": []
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "IDP_DD2579",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "aa96f717-3a23-4c3f-88d9-59d0126acaea",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "IDP_DD2579"
+    },
+    "locks": [],
+    "key": "062159fd-6032-4895-a406-1bafd72c242a",
+    "files": []
+  }
+}

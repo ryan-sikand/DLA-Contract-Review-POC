@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "Agentic Process",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "b3f91ac8-417f-4a3c-90a9-e896daf08533",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "Agentic Process"
+    },
+    "locks": [],
+    "key": "88d97c14-b955-4456-a3e9-08d26207def8",
+    "files": []
+  }
+}

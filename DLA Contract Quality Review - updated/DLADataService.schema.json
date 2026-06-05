@@ -1,0 +1,164 @@
+{
+  "name": "DLADataService",
+  "displayName": "DLA Data Service",
+  "description": "Authoritative contract quality review records populated from DU extraction and consumed by the Contract Validation Agent.",
+  "fields": [
+    {
+      "fieldName": "ContractBatchId",
+      "type": "STRING",
+      "displayName": "Contract Batch Id",
+      "description": "Correlation id shared by all documents in one contract review package.",
+      "isRequired": true,
+      "lengthLimit": 200
+    },
+    {
+      "fieldName": "DocumentRecordKey",
+      "type": "STRING",
+      "displayName": "Document Record Key",
+      "description": "Idempotency key derived from contract batch, document type, and source file identity.",
+      "isRequired": true,
+      "isUnique": true,
+      "lengthLimit": 500
+    },
+    {
+      "fieldName": "DocumentType",
+      "type": "STRING",
+      "displayName": "Document Type",
+      "description": "DU document type such as DD2579, SF1449, SAAD, or DF_TR.",
+      "isRequired": true,
+      "lengthLimit": 100
+    },
+    {
+      "fieldName": "SourceFilePath",
+      "type": "STRING",
+      "displayName": "Source File Path",
+      "description": "Original storage bucket path for the source PDF.",
+      "lengthLimit": 1000
+    },
+    {
+      "fieldName": "SourceFileName",
+      "type": "STRING",
+      "displayName": "Source File Name",
+      "description": "Original source PDF file name.",
+      "lengthLimit": 500
+    },
+    {
+      "fieldName": "ExtractionProjectName",
+      "type": "STRING",
+      "displayName": "Extraction Project Name",
+      "description": "Document Understanding project version used for extraction.",
+      "lengthLimit": 200
+    },
+    {
+      "fieldName": "ExtractionProjectVersion",
+      "type": "STRING",
+      "displayName": "Extraction Project Version",
+      "description": "Document Understanding project version number used for extraction.",
+      "lengthLimit": 50
+    },
+    {
+      "fieldName": "ValidationState",
+      "type": "STRING",
+      "displayName": "Validation State",
+      "description": "DU validation state for the record.",
+      "lengthLimit": 100
+    },
+    {
+      "fieldName": "ProcessingState",
+      "type": "STRING",
+      "displayName": "Processing State",
+      "description": "Pipeline state such as Extracted, Validated, AgentReviewed, or Exception.",
+      "lengthLimit": 100
+    },
+    {
+      "fieldName": "ExtractedJson",
+      "type": "MULTILINE_TEXT",
+      "displayName": "Extracted JSON",
+      "description": "Normalized DU extraction payload stored for audit and downstream agent input.",
+      "lengthLimit": 10000
+    },
+    {
+      "fieldName": "AgentInputJson",
+      "type": "MULTILINE_TEXT",
+      "displayName": "Agent Input JSON",
+      "description": "Assembled contract package JSON passed into the Contract Validation Agent.",
+      "lengthLimit": 10000
+    },
+    {
+      "fieldName": "AgentOutputJson",
+      "type": "MULTILINE_TEXT",
+      "displayName": "Agent Output JSON",
+      "description": "Strict JSON output returned by the Contract Validation Agent.",
+      "lengthLimit": 10000
+    },
+    {
+      "fieldName": "NAICSCode",
+      "type": "STRING",
+      "displayName": "NAICS Code",
+      "lengthLimit": 100
+    },
+    {
+      "fieldName": "ProductOrServiceCode",
+      "type": "STRING",
+      "displayName": "Product Or Service Code",
+      "lengthLimit": 100
+    },
+    {
+      "fieldName": "SF1449PSC",
+      "type": "STRING",
+      "displayName": "SF1449 PSC",
+      "lengthLimit": 100
+    },
+    {
+      "fieldName": "SizeStandard",
+      "type": "STRING",
+      "displayName": "Size Standard",
+      "lengthLimit": 200
+    },
+    {
+      "fieldName": "AwardEffectiveDate",
+      "type": "DATETIME",
+      "displayName": "Award Effective Date"
+    },
+    {
+      "fieldName": "SolicitationIssueDate",
+      "type": "DATETIME",
+      "displayName": "Solicitation Issue Date"
+    },
+    {
+      "fieldName": "IssuedByCode",
+      "type": "STRING",
+      "displayName": "Issued By Code",
+      "lengthLimit": 100
+    },
+    {
+      "fieldName": "SAADSamCheckedDate",
+      "type": "DATETIME",
+      "displayName": "SAAD SAM Checked Date"
+    },
+    {
+      "fieldName": "DFTRDateSigned",
+      "type": "DATETIME",
+      "displayName": "DF TR Date Signed"
+    },
+    {
+      "fieldName": "SuppliesServices",
+      "type": "MULTILINE_TEXT",
+      "displayName": "Supplies Services",
+      "lengthLimit": 10000
+    },
+    {
+      "fieldName": "ItemServiceDescription",
+      "type": "MULTILINE_TEXT",
+      "displayName": "Item Service Description",
+      "lengthLimit": 10000
+    },
+    {
+      "fieldName": "ErrorDetails",
+      "type": "MULTILINE_TEXT",
+      "displayName": "Error Details",
+      "description": "Pipeline exception detail suitable for audit review.",
+      "lengthLimit": 10000
+    }
+  ]
+}

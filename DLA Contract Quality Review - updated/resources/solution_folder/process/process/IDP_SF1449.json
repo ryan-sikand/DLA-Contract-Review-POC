@@ -1,0 +1,50 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "IDP_SF1449",
+    "kind": "process",
+    "type": "process",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "e897439d-a1e7-40b5-867b-7ed0210506bd",
+    "isOverridable": true,
+    "dependencies": [
+      {
+        "name": "IDP_SF1449",
+        "kind": "package"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Process",
+      "name": "IDP_SF1449",
+      "package": {
+        "key": "e235d8c1-1b27-4fa0-b6e7-196550a61efa"
+      },
+      "packageName": "DLA.Contract.Quality.Review.process.IDP_SF1449",
+      "inputArguments": "{}",
+      "jobPriority": "Medium",
+      "hiddenForAttendedUser": false,
+      "alwaysRunning": false,
+      "autoStartProcess": false,
+      "jobRecording": "Disabled",
+      "targetFrameworkValue": "Portable",
+      "duration": 40,
+      "frequency": 500,
+      "quality": 100,
+      "remoteControlAccess": "None",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180,
+      "tags": []
+    },
+    "locks": [],
+    "key": "0697c4b1-47fa-4e20-a7b7-a57077ae96dc",
+    "files": []
+  }
+}

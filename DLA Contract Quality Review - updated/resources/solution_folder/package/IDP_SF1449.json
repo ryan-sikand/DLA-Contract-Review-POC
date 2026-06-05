@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "IDP_SF1449",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "e897439d-a1e7-40b5-867b-7ed0210506bd",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "IDP_SF1449"
+    },
+    "locks": [],
+    "key": "e235d8c1-1b27-4fa0-b6e7-196550a61efa",
+    "files": []
+  }
+}

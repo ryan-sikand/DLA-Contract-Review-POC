@@ -1,0 +1,40 @@
+{
+  "ExportedBy": "StudioWeb",
+  "BundleHash": "g0MSxFC1FXyNgt6yagSKyKet8U3xnsEQYSOFXPIYWxM",
+  "Version": "1.0.0.0",
+  "JitAssemblyCompilerCommands": [
+    {
+      "ProviderName": "CustomEntities",
+      "BundleOptions": {
+        "EntitiesBundle": {
+          "Types": {
+            "DLAContractSAADSAADV11": {
+              "Name": "DLAContractSAADSAADV11",
+              "Properties": [
+                {
+                  "Name": "HasAnActiveRegistrationInSAMDateSAMChecked",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.Nullable`1[[System.DateTime, System.Private.CoreLib]], System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                }
+              ],
+              "Values": [],
+              "BaseType": {
+                "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtendedExtractionResultsForDocumentData, UiPath.IntelligentOCR.StudioWeb.Activities"
+              }
+            }
+          },
+          "Metadata": {},
+          "Version": 1
+        },
+        "Hash": "1381212083",
+        "BundleName": "ExtendedExtractionResultsForDocumentData.DLAContractSAADSAADV11"
+      },
+      "EntityAssemblyKey": {
+        "Name": "UiPath.IntelligentOCR.StudioWeb.Activities.SWEntities.ExtendedExtractionResultsForDocumentData.DLAContractSAADSAADV11",
+        "Hash": "MTM4MTIxMjA000",
+        "AssemblyName": "ExtendedExtractionRe.CustomEntitiesSAAD"
+      }
+    }
+  ]
+}

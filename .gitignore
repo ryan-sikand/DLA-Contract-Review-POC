@@ -1,0 +1,8 @@
+.codex-inspect/
+*.log
+*.tmp
+*.bak
+bin/
+obj/
+node_modules/
+**/.local/

@@ -1,0 +1,50 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "IDP_SAAD",
+    "kind": "process",
+    "type": "process",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "e62e24fa-fca8-4911-85ba-8884f6d5670e",
+    "isOverridable": true,
+    "dependencies": [
+      {
+        "name": "IDP_SAAD",
+        "kind": "package"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Process",
+      "name": "IDP_SAAD",
+      "package": {
+        "key": "7c64e636-b1c2-4d97-a67a-e0ed744168cf"
+      },
+      "packageName": "DLA.Contract.Quality.Review.process.IDP_SAAD",
+      "inputArguments": "{}",
+      "jobPriority": "Medium",
+      "hiddenForAttendedUser": false,
+      "alwaysRunning": false,
+      "autoStartProcess": false,
+      "jobRecording": "Disabled",
+      "targetFrameworkValue": "Portable",
+      "duration": 40,
+      "frequency": 500,
+      "quality": 100,
+      "remoteControlAccess": "None",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180,
+      "tags": []
+    },
+    "locks": [],
+    "key": "298190eb-ce7b-4dc0-8fbe-5f61821d65ba",
+    "files": []
+  }
+}

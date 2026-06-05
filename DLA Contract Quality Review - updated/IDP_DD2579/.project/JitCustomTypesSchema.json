@@ -1,0 +1,112 @@
+{
+  "ExportedBy": "StudioWeb",
+  "BundleHash": "bUnIWjcdJdxyXi6PpSb38f2rHayhB99FEJY2wWdYco",
+  "Version": "1.0.0.0",
+  "JitAssemblyCompilerCommands": [
+    {
+      "ProviderName": "CustomEntities",
+      "BundleOptions": {
+        "EntitiesBundle": {
+          "Types": {
+            "DLAContractDD2579DD2579V7": {
+              "Name": "DLAContractDD2579DD2579V7",
+              "Properties": [
+                {
+                  "Name": "ItemAndOrServiceDescription",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "SizeStandard",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "NAICSCode",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "ProductOrServiceCode",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                }
+              ],
+              "Values": [],
+              "BaseType": {
+                "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtendedExtractionResultsForDocumentData, UiPath.IntelligentOCR.StudioWeb.Activities"
+              }
+            }
+          },
+          "Metadata": {},
+          "Version": 1
+        },
+        "Hash": "1381212083",
+        "BundleName": "ExtendedExtractionResultsForDocumentData.DLAContractDD2579DD2579V7"
+      },
+      "EntityAssemblyKey": {
+        "Name": "UiPath.IntelligentOCR.StudioWeb.Activities.SWEntities.ExtendedExtractionResultsForDocumentData.DLAContractDD2579DD2579V7",
+        "Hash": "MTM4MTIxMjA000",
+        "AssemblyName": "ExtendedExtractionRe.CustomEntitiesDD2579"
+      }
+    },
+    {
+      "ProviderName": "CustomEntities",
+      "BundleOptions": {
+        "EntitiesBundle": {
+          "Types": {
+            "DLAContractDD2579V2DD2579V8": {
+              "Name": "DLAContractDD2579V2DD2579V8",
+              "Properties": [
+                {
+                  "Name": "ItemAndOrServiceDescription",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedFieldNoMultivalues`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "SizeStandard",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedFieldNoMultivalues`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "NAICSCode",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedFieldNoMultivalues`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "ProductOrServiceCode",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedFieldNoMultivalues`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                }
+              ],
+              "Values": [],
+              "BaseType": {
+                "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtendedExtractionResultsForDocumentData, UiPath.IntelligentOCR.StudioWeb.Activities"
+              },
+              "GenerateChangeNotifications": true
+            }
+          },
+          "Metadata": {
+            "UniqueAssemblyIdentityId": "2e0c85c8-ea88-4bb3-b8b1-2e04ce69c877"
+          },
+          "Version": 1
+        },
+        "Hash": "-2073815685",
+        "BundleName": "ExtendedExtractionResultsForDocumentData.DLAContractDD2579V2DD2579V8"
+      },
+      "EntityAssemblyKey": {
+        "Name": "UiPath.IntelligentOCR.StudioWeb.Activities.SWEntities.ExtendedExtractionResultsForDocumentData.DLAContractDD2579V2DD2579V8",
+        "Hash": "LTIwNzM4MTU2ODU",
+        "AssemblyName": "ExtendedExtractionRe.J3Oql3AXyAL1fjxrM127Wvb1"
+      }
+    }
+  ]
+}

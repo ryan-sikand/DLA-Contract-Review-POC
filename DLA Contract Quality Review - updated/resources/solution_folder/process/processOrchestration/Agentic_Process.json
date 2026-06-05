@@ -1,0 +1,44 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "Agentic Process",
+    "kind": "process",
+    "type": "processOrchestration",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "b3f91ac8-417f-4a3c-90a9-e896daf08533",
+    "isOverridable": true,
+    "dependencies": [
+      {
+        "name": "Agentic Process",
+        "kind": "package"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "ProcessOrchestration",
+      "name": "Agentic Process",
+      "package": {
+        "key": "88d97c14-b955-4456-a3e9-08d26207def8"
+      },
+      "packageName": "DLA.Contract.Quality.Review.agentic.Agentic.Process",
+      "inputArguments": "{}",
+      "hiddenForAttendedUser": false,
+      "alwaysRunning": false,
+      "autoStartProcess": false,
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180,
+      "tags": []
+    },
+    "locks": [],
+    "key": "409273d4-7571-4f6a-a423-28035a3b85f5",
+    "files": []
+  }
+}

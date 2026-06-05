@@ -1,0 +1,23 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "Contract Validation Agent",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "6b615eab-6315-4de3-8401-7b3d41440270",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "Contract Validation Agent"
+    },
+    "locks": [],
+    "key": "2ff8d9d9-05f5-4d35-91f1-7323a447fda5",
+    "files": []
+  }
+}

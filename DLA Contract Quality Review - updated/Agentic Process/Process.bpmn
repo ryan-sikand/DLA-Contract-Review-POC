@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:uipath="http://uipath.org/schema/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="x-uipath-initial-diagram" targetNamespace="http://www.omg.org/spec/BPMN/20100524/MODEL" exporter="UiPath Studio Web (https://uipath.com)" exporterVersion="f53a2b50">
+  <bpmn:process id="Process_1" name="Process" isExecutable="false">
+    <bpmn:extensionElements>
+      <uipath:variables version="v1">
+        <uipath:inputOutput id="error" name="Error" type="jsonSchema" elementId="Activity_utOIgv"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
+        <uipath:inputOutput id="content" name="content" type="string" elementId="Activity_utOIgv" />
+        <uipath:inputOutput id="error2" name="Error" type="jsonSchema" elementId="Activity_ggHlXR"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
+      </uipath:variables>
+      <uipath:bindings version="v1">
+        <uipath:binding id="bfKswkJRs" name="folderPath" type="string" resource="process" resourceSubType="Agent" resourceKey="Contract Validation Agent" propertyAttribute="folderPath" />
+        <uipath:binding id="b42Mohfb9" name="name" type="string" default="Contract Validation Agent" resource="process" resourceSubType="Agent" resourceKey="Contract Validation Agent" propertyAttribute="name" />
+        <uipath:binding id="b2jZulBSk" name="folderPath" type="string" resource="process" resourceKey="IDP" propertyAttribute="folderPath" />
+        <uipath:binding id="bw600Q3rh" name="name" type="string" default="IDP" resource="process" resourceKey="IDP" propertyAttribute="name" />
+        <uipath:binding id="bIarY3IoJ" name="folderPath" type="string" resource="process" resourceKey="IDP_DD2579" propertyAttribute="folderPath" />
+        <uipath:binding id="bCCwsgDS0" name="name" type="string" default="IDP_DD2579" resource="process" resourceKey="IDP_DD2579" propertyAttribute="name" />
+      </uipath:bindings>
+      <uipath:migrationVersion version="15" />
+      <uipath:intsvcActivityConfig version="v2" />
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="Event_start" name="Start event">
+      <bpmn:extensionElements>
+        <uipath:entryPointId value="ef2f5f8e-2317-4ff2-be8c-5b34c894100a" />
+      </bpmn:extensionElements>
+      <bpmn:outgoing>edge_X0BeBW</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Activity_ggHlXR" name="IDP">
+      <bpmn:extensionElements>
+        <uipath:activity version="v1">
+          <uipath:type value="Orchestrator.StartJob" version="v2" />
+          <uipath:context>
+            <uipath:input name="name" type="string" value="=bindings.bCCwsgDS0" />
+            <uipath:input name="folderPath" type="string" value="=bindings.bIarY3IoJ" />
+            <uipath:input name="_label" type="string" value="IDP_DD2579" />
+          </uipath:context>
+          <uipath:output name="Error" type="jsonSchema" source="=Error" var="error2" />
+        </uipath:activity>
+      </bpmn:extensionElements>
+      <bpmn:incoming>edge_X0BeBW</bpmn:incoming>
+      <bpmn:outgoing>edge_JccSww</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_utOIgv" name="Contract Validation Agent">
+      <bpmn:extensionElements>
+        <uipath:activity version="v1">
+          <uipath:type value="Orchestrator.StartAgentJob" version="v2" />
+          <uipath:context>
+            <uipath:input name="name" type="string" value="=bindings.b42Mohfb9" />
+            <uipath:input name="folderPath" type="string" value="=bindings.bfKswkJRs" />
+            <uipath:input name="_label" type="string" value="Contract Validation Agent" />
+          </uipath:context>
+          <uipath:output name="Error" type="jsonSchema" source="=Error" var="error" />
+          <uipath:output name="content" type="string" source="=content" var="content" />
+        </uipath:activity>
+      </bpmn:extensionElements>
+      <bpmn:incoming>edge_JccSww</bpmn:incoming>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="edge_X0BeBW" sourceRef="Event_start" targetRef="Activity_ggHlXR" />
+    <bpmn:sequenceFlow id="edge_JccSww" sourceRef="Activity_ggHlXR" targetRef="Activity_utOIgv" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="S_Event_start" bpmnElement="Event_start">
+        <dc:Bounds x="260" y="200" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="260" y="241" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Activity_ggHlXR" bpmnElement="Activity_ggHlXR">
+        <dc:Bounds x="368" y="178" width="100" height="80" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="368" y="263" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Activity_utOIgv" bpmnElement="Activity_utOIgv">
+        <dc:Bounds x="574" y="178" width="100" height="80" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="574" y="263" width="100" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_edge_X0BeBW" bpmnElement="edge_X0BeBW">
+        <di:waypoint x="296" y="218" />
+        <di:waypoint x="368" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_edge_JccSww" bpmnElement="edge_JccSww">
+        <di:waypoint x="468" y="218" />
+        <di:waypoint x="574" y="218" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
