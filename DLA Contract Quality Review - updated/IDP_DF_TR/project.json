@@ -5,6 +5,7 @@
   "description": "Extracts DF TR signature review data and supports persistence to DLA Data Service.",
   "main": "Main.xaml",
   "dependencies": {
+    "UiPath.DataService.Activities": "26.4.5-preview",
     "UiPath.DocumentUnderstanding.Activities": "3.2.0-preview",
     "UiPath.System.Activities": "26.4.1-preview",
     "UiPath.WebAPI.Activities": "2.5.0-preview"

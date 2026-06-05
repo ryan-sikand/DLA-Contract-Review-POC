@@ -6,6 +6,7 @@
         <uipath:inputOutput id="error" name="Error" type="jsonSchema" elementId="Activity_utOIgv"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
         <uipath:inputOutput id="content" name="content" type="string" elementId="Activity_utOIgv" />
         <uipath:inputOutput id="error2" name="Error" type="jsonSchema" elementId="Activity_ggHlXR"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
+        <uipath:inputOutput id="contractDataJson" name="out_ContractDataJson" type="string" elementId="Activity_ggHlXR" />
       </uipath:variables>
       <uipath:bindings version="v1">
         <uipath:binding id="bfKswkJRs" name="folderPath" type="string" resource="process" resourceSubType="Agent" resourceKey="Contract Validation Agent" propertyAttribute="folderPath" />
@@ -34,6 +35,7 @@
             <uipath:input name="_label" type="string" value="IDP_DD2579" />
           </uipath:context>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="error2" />
+          <uipath:output name="out_ContractDataJson" type="string" source="=out_ContractDataJson" var="contractDataJson" />
         </uipath:activity>
       </bpmn:extensionElements>
       <bpmn:incoming>edge_X0BeBW</bpmn:incoming>
@@ -47,6 +49,7 @@
             <uipath:input name="name" type="string" value="=bindings.b42Mohfb9" />
             <uipath:input name="folderPath" type="string" value="=bindings.bfKswkJRs" />
             <uipath:input name="_label" type="string" value="Contract Validation Agent" />
+            <uipath:input name="contractDataJson" type="string" value="=contractDataJson" />
           </uipath:context>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="error" />
           <uipath:output name="content" type="string" source="=content" var="content" />

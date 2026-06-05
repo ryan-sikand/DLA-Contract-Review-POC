@@ -683,6 +683,390 @@
         "DefaultValueSource": "Property"
       }
     ],
+    "UiPath.DataService.Activities.CreateEntityRecord\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.CreateMultipleEntityRecords\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.DeleteEntityRecord\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.DeleteFileFromRecordField\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.DeleteMultipleEntityRecords\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.DownloadFileFromRecordField\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.GetEntityRecordById\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.QueryEntityRecords\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.QueryEntityRecordsBuilder\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.UpdateEntityRecord\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.UpdateMultipleEntityRecords\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
+    "UiPath.DataService.Activities.UploadFileToRecordField\u00601": [
+      {
+        "Type": "Entity",
+        "PublishNullValues": false,
+        "Key": {
+          "Value": "BindingsKey",
+          "ValueSource": "Property"
+        },
+        "Values": {
+          "folderPath": {
+            "Value": "",
+            "ValueSource": "Property"
+          },
+          "name": {
+            "Value": "BindingsKey",
+            "ValueSource": "Property"
+          }
+        },
+        "Arguments": {
+          "Scope": {
+            "Value": "ScopeKey",
+            "ValueSource": "Property"
+          },
+          "BindingsVersion": {
+            "Value": "2.2",
+            "ValueSource": "Constant"
+          }
+        },
+        "SubBindings": [],
+        "DefaultValueSource": "Property"
+      }
+    ],
     "UiPath.IntelligentOCR.StudioWeb.Activities.DataValidation.Artifacts.CreateDocumentValidationArtifacts\u00601": [
       {
         "Type": "bucket",
