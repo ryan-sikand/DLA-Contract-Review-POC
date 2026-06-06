@@ -41,16 +41,17 @@ namespace IDP_DD2579
             AddString(body, root, "issuedByCode", "IssuedByCode");
             AddString(body, root, "suppliesServices", "SuppliesServices");
             AddString(body, root, "itemServiceDescription", "ItemServiceDescription");
+            NormalizeFileIdentity(body);
 
             var connection = new ISConnections(services.Container).DataService.DefaultConnection;
             if (body.TryGetValue("SourceFileName", out var sourceFileName) &&
                 sourceFileName is string fileName &&
                 !string.IsNullOrWhiteSpace(fileName))
             {
-                var existingRecordId = await FindExistingRecordIdAsync(connection, fileName);
-                if (!string.IsNullOrWhiteSpace(existingRecordId))
+                var existingRecordIds = await FindExistingRecordIdsAsync(connection, fileName);
+                if (existingRecordIds.Count > 0)
                 {
-                    await ReplaceRecordAsync(connection, existingRecordId, body);
+                    await ReplaceRecordAsync(connection, existingRecordIds[0], body);
                     return;
                 }
             }
@@ -72,7 +73,7 @@ namespace IDP_DD2579
             await connection.ExecuteAsync(configuration, request);
         }
 
-        private static async Task<string?> FindExistingRecordIdAsync(dynamic connection, string sourceFileName)
+        private static async Task<IReadOnlyList<string>> FindExistingRecordIdsAsync(dynamic connection, string sourceFileName)
         {
             var configuration = new CodedConnectorConfiguration(
                 connection: connection,
@@ -86,28 +87,35 @@ namespace IDP_DD2579
                 PathParameters = new() { ["entityName"] = "DLADataService" },
                 QueryParameters = new()
                 {
-                    ["queryExpression"] = $"SourceFileName = '{EscapeCeqlValue(sourceFileName)}'",
-                    ["limit"] = "1",
+                    ["limit"] = "100",
                     ["expansionLevel"] = "1"
                 },
-                BodyParameters = new Dictionary<string, object?>()
+                BodyParameters = new Dictionary<string, object?>
+                {
+                    ["filterGroup"] = new Dictionary<string, object?>
+                    {
+                        ["logicalOperator"] = 0,
+                        ["queryFilters"] = new object[]
+                        {
+                            new Dictionary<string, object?>
+                            {
+                                ["fieldName"] = "SourceFileName",
+                                ["operator"] = "=",
+                                ["value"] = sourceFileName
+                            }
+                        }
+                    }
+                }
             };
 
             var response = await connection.ExecuteAsync(configuration, request);
             if (response is null)
             {
-                return null;
+                return Array.Empty<string>();
             }
 
             using var responseDocument = JsonDocument.Parse(JsonSerializer.Serialize(response));
-            if (responseDocument.RootElement.ValueKind != JsonValueKind.Array ||
-                responseDocument.RootElement.GetArrayLength() == 0)
-            {
-                return null;
-            }
-
-            var firstRecord = responseDocument.RootElement[0];
-            return firstRecord.TryGetProperty("Id", out JsonElement id) ? id.GetString() : null;
+            return ExtractRecordIds(responseDocument.RootElement);
         }
 
         private static async Task ReplaceRecordAsync(
@@ -136,9 +144,91 @@ namespace IDP_DD2579
             await connection.ExecuteAsync(configuration, request);
         }
 
-        private static string EscapeCeqlValue(string value)
+        private static List<string> ExtractRecordIds(JsonElement element)
         {
-            return value.Replace("'", "''", StringComparison.Ordinal);
+            var ids = new List<string>();
+
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in element.EnumerateArray())
+                {
+                    ids.AddRange(ExtractRecordIds(item));
+                }
+
+                return ids;
+            }
+
+            if (element.ValueKind != JsonValueKind.Object)
+            {
+                return ids;
+            }
+
+            if (element.TryGetProperty("Id", out JsonElement id) && id.ValueKind == JsonValueKind.String)
+            {
+                var idValue = id.GetString();
+                if (!string.IsNullOrWhiteSpace(idValue))
+                {
+                    ids.Add(idValue);
+                }
+            }
+
+            if (element.TryGetProperty("Records", out JsonElement records))
+            {
+                ids.AddRange(ExtractRecordIds(records));
+            }
+
+            if (element.TryGetProperty("Data", out JsonElement data))
+            {
+                ids.AddRange(ExtractRecordIds(data));
+            }
+
+            return ids;
+        }
+
+        private static void NormalizeFileIdentity(IDictionary<string, object?> body)
+        {
+            var sourceFileName = TryGetBodyString(body, "SourceFileName");
+            if (string.IsNullOrWhiteSpace(sourceFileName))
+            {
+                sourceFileName = TryGetBodyString(body, "SourceFilePath");
+            }
+
+            var normalizedFileName = NormalizeSourceFileName(sourceFileName);
+            if (string.IsNullOrWhiteSpace(normalizedFileName))
+            {
+                return;
+            }
+
+            body["SourceFileName"] = normalizedFileName;
+            body["DocumentRecordKey"] = normalizedFileName;
+        }
+
+        private static string? TryGetBodyString(IDictionary<string, object?> body, string fieldName)
+        {
+            return body.TryGetValue(fieldName, out var value) ? value as string : null;
+        }
+
+        private static string NormalizeSourceFileName(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            var normalized = value.Trim().Replace('\\', '/');
+            var lastSlash = normalized.LastIndexOf('/');
+            if (lastSlash >= 0 && lastSlash < normalized.Length - 1)
+            {
+                normalized = normalized.Substring(lastSlash + 1);
+            }
+
+            var lastDot = normalized.LastIndexOf('.');
+            if (lastDot > 0)
+            {
+                normalized = normalized.Substring(0, lastDot);
+            }
+
+            return normalized.Trim();
         }
 
         private static void AddString(
