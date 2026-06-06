@@ -43,6 +43,14 @@ namespace IDP_SF1449
             AddString(body, root, "itemServiceDescription", "ItemServiceDescription");
 
             var connection = new ISConnections(services.Container).DataService.DefaultConnection;
+            if (body.TryGetValue("SourceFileName", out var sourceFileName) &&
+                sourceFileName is string fileName &&
+                !string.IsNullOrWhiteSpace(fileName) &&
+                await RecordExistsAsync(connection, fileName))
+            {
+                return;
+            }
+
             var configuration = new CodedConnectorConfiguration(
                 connection: connection,
                 objectName: "CreateEntityRecordCurated",
@@ -58,6 +66,43 @@ namespace IDP_SF1449
             };
 
             await connection.ExecuteAsync(configuration, request);
+        }
+
+        private static async Task<bool> RecordExistsAsync(dynamic connection, string sourceFileName)
+        {
+            var configuration = new CodedConnectorConfiguration(
+                connection: connection,
+                objectName: "QueryEntityRecordsCurated",
+                operation: Operation.Create,
+                httpMethod: "POST",
+                path: "/v2/{entityName}/qer");
+
+            var request = new ConnectorRequest
+            {
+                PathParameters = new() { ["entityName"] = "DLADataService" },
+                QueryParameters = new()
+                {
+                    ["queryExpression"] = $"SourceFileName = '{EscapeCeqlValue(sourceFileName)}'",
+                    ["limit"] = "1",
+                    ["expansionLevel"] = "1"
+                },
+                BodyParameters = new Dictionary<string, object?>()
+            };
+
+            var response = await connection.ExecuteAsync(configuration, request);
+            if (response is null)
+            {
+                return false;
+            }
+
+            using var responseDocument = JsonDocument.Parse(JsonSerializer.Serialize(response));
+            return responseDocument.RootElement.ValueKind == JsonValueKind.Array &&
+                responseDocument.RootElement.GetArrayLength() > 0;
+        }
+
+        private static string EscapeCeqlValue(string value)
+        {
+            return value.Replace("'", "''", StringComparison.Ordinal);
         }
 
         private static void AddString(
