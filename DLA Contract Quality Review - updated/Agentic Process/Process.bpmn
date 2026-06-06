@@ -4,14 +4,14 @@
     <bpmn:extensionElements>
       <uipath:variables version="v1">
         <uipath:inputOutput id="dd2579DocumentPath" name="dd2579DocumentPath" type="string" elementId="Event_start" />
-        <uipath:inputOutput id="dd2579ContractDataJson" name="out_DD2579ContractDataJson" type="string" elementId="Activity_IDP_DD2579" />
-        <uipath:inputOutput id="sf1449ContractDataJson" name="out_SF1449ContractDataJson" type="string" elementId="Activity_IDP_SF1449" />
-        <uipath:inputOutput id="saadContractDataJson" name="out_SAADContractDataJson" type="string" elementId="Activity_IDP_SAAD" />
-        <uipath:inputOutput id="dftrContractDataJson" name="out_DFTRContractDataJson" type="string" elementId="Activity_IDP_DF_TR" />
-        <uipath:inputOutput id="contractDataJson" name="contractDataJson" type="string" elementId="Activity_Consolidate_DU" />
-        <uipath:inputOutput id="content" name="content" type="string" elementId="Activity_Contract_Agent" />
-        <uipath:inputOutput id="excelReportRowsJson" name="excelReportRowsJson" type="string" elementId="Activity_Contract_Agent" />
-        <uipath:inputOutput id="excelFindingsFile" name="excelFindingsFile" type="jsonSchema" elementId="Activity_Contract_Agent"><![CDATA[{"type":"object","properties":{"ID":{"type":"string"},"FullName":{"type":"string"},"MimeType":{"type":"string"},"Metadata":{"type":"object","additionalProperties":{"type":"string"}}},"required":["ID"],"x-uipath-resource-kind":"JobAttachment"}]]></uipath:inputOutput>
+        <uipath:inputOutput id="dd2579ContractDataJson" name="out_DD2579ContractDataJson" type="string" />
+        <uipath:inputOutput id="sf1449ContractDataJson" name="out_SF1449ContractDataJson" type="string" />
+        <uipath:inputOutput id="saadContractDataJson" name="out_SAADContractDataJson" type="string" />
+        <uipath:inputOutput id="dftrContractDataJson" name="out_DFTRContractDataJson" type="string" />
+        <uipath:inputOutput id="contractDataJson" name="contractDataJson" type="string" />
+        <uipath:inputOutput id="content" name="content" type="string" />
+        <uipath:inputOutput id="excelReportRowsJson" name="excelReportRowsJson" type="string" />
+        <uipath:inputOutput id="excelFindingsFile" name="excelFindingsFile" type="jsonSchema"><![CDATA[{"type":"object","properties":{"ID":{"type":"string"},"FullName":{"type":"string"},"MimeType":{"type":"string"},"Metadata":{"type":"object","additionalProperties":{"type":"string"}}},"required":["ID"],"x-uipath-resource-kind":"JobAttachment"}]]></uipath:inputOutput>
         <uipath:inputOutput id="errorDD2579" name="Error" type="jsonSchema" elementId="Activity_IDP_DD2579"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
         <uipath:inputOutput id="errorSF1449" name="Error" type="jsonSchema" elementId="Activity_IDP_SF1449"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
         <uipath:inputOutput id="errorSAAD" name="Error" type="jsonSchema" elementId="Activity_IDP_SAAD"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
@@ -47,7 +47,7 @@
             <uipath:input name="name" type="string" value="=bindings.bDD2579Name" />
             <uipath:input name="folderPath" type="string" value="=bindings.bDD2579FolderPath" />
             <uipath:input name="_label" type="string" value="IDP_DD2579" />
-            <uipath:input name="in_DdDocumentPath" type="string" value="=dd2579DocumentPath" />
+            <uipath:input name="in_DdDocumentPath" type="string" value="=vars.dd2579DocumentPath" />
           </uipath:context>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorDD2579" />
           <uipath:output name="out_ContractDataJson" type="string" source="=out_ContractDataJson" var="dd2579ContractDataJson" />
@@ -178,8 +178,8 @@ return { response: JSON.stringify(consolidated) };
             <uipath:input name="name" type="string" value="=bindings.bAgentName" />
             <uipath:input name="folderPath" type="string" value="=bindings.bAgentFolderPath" />
             <uipath:input name="_label" type="string" value="Contract Validation Agent" />
-            <uipath:input name="contractDataJson" type="string" value="=contractDataJson" />
           </uipath:context>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"contractDataJson":"=vars.contractDataJson"}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorAgent" />
           <uipath:output name="content" type="string" source="=content" var="content" />
           <uipath:output name="excelReportRowsJson" type="string" source="=excelReportRowsJson" var="excelReportRowsJson" />

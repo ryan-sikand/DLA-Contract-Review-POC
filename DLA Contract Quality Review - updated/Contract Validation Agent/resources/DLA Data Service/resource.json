@@ -8,7 +8,7 @@
   "entitySet": [
     {
       "id": "73b82488-f560-f111-8fcb-002248a16d28",
-      "referenceKey": "DLADataService",
+      "referenceKey": "73b82488-f560-f111-8fcb-002248a16d28",
       "name": "DLADataService",
       "folderId": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a",
       "folderDisplayName": "DLA Contract Quality Review POC",

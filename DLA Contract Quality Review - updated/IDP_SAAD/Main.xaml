@@ -130,13 +130,19 @@
                 </InArgument>
               </p:ExtractDocumentDataWithDocumentData.ProjectTag>
             </p:ExtractDocumentDataWithDocumentData>
-            <uisad:ValidateDocumentDataWithDocumentData x:TypeArguments="uisasedb:DLAContractSAADSAADV11" FieldsValidationConfidence="{x:Null}" OperationId="{x:Null}" OrganizationId="{x:Null}" TenantId="{x:Null}" WaitItemDataObject="{x:Null}" ActionCatalogue="default_du_actions" ActionPriority="Medium" ActionTitle="Validate Extraction Results" AutomaticExtractionResults="[sAADDocumentData]" DisplayMode="Compact" DisplayName="Validate SAAD extraction" EnableRTLControls="False" sap2010:WorkflowViewState.IdRef="ValidateDocumentDataWithDocumentData`1_1" OrchestratorBucketName="DLA_Contract_Docs" OrchestratorFolderName="ryan.sikand@uipath.com's workspace" ValidatedExtractionResults="[sAADDocumentData]" />
+            <ui:CommentOut DisplayName="Disabled activities" sap2010:WorkflowViewState.IdRef="CommentOut_SAAD_Validation">
+              <ui:CommentOut.Body>
+                <Sequence DisplayName="Ignored Activities" sap2010:WorkflowViewState.IdRef="Sequence_SAAD_DisabledValidation">
+                  <uisad:ValidateDocumentDataWithDocumentData x:TypeArguments="uisasedb:DLAContractSAADSAADV11" FieldsValidationConfidence="{x:Null}" OperationId="{x:Null}" OrganizationId="{x:Null}" TenantId="{x:Null}" WaitItemDataObject="{x:Null}" ActionCatalogue="default_du_actions" ActionPriority="Medium" ActionTitle="Validate Extraction Results" AutomaticExtractionResults="[sAADDocumentData]" DisplayMode="Compact" DisplayName="Validate SAAD extraction" EnableRTLControls="False" sap2010:WorkflowViewState.IdRef="ValidateDocumentDataWithDocumentData`1_1" OrchestratorBucketName="DLA_Contract_Docs" OrchestratorFolderName="ryan.sikand@uipath.com's workspace" ValidatedExtractionResults="[sAADDocumentData]" />
+                </Sequence>
+              </ui:CommentOut.Body>
+            </ui:CommentOut>
             <Assign DisplayName="Build SAAD agent input JSON" sap2010:WorkflowViewState.IdRef="Assign_SAAD_Json">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[contractDataJson]</OutArgument>
               </Assign.To>
               <Assign.Value>
-                <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentRecordKey", contractBatchId &amp; "|SAAD|" &amp; sampleFile.FileFullPath}, {"documentType", "SAAD"}, {"sourceFilePath", sampleFile.FileFullPath}, {"sourceFileName", downloadedFile.GetName()}, {"extractionProjectName", "DLA_Contract_SAAD"}, {"extractionProjectVersion", "11"}, {"validationState", "Validated"}, {"processingState", "Extracted"}, {"saadSamCheckedDate", If(sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked Is Nothing OrElse sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked.Value Is Nothing, "", sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked.Value.ToString())}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
+                <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentRecordKey", contractBatchId &amp; "|SAAD|" &amp; sampleFile.FileFullPath}, {"documentType", "SAAD"}, {"sourceFilePath", sampleFile.FileFullPath}, {"sourceFileName", downloadedFile.GetName()}, {"extractionProjectName", "DLA_Contract_SAAD"}, {"extractionProjectVersion", "11"}, {"validationState", "NotValidated"}, {"processingState", "Extracted"}, {"saadSamCheckedDate", If(sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked Is Nothing OrElse sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked.Value Is Nothing, "", sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked.Value.ToString())}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
               </Assign.Value>
             </Assign>
             <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="Persist DLA Data Service record" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_SAAD_DataService" UnSafe="False" WorkflowFileName="PersistDlaDataServiceRecord.cs">
