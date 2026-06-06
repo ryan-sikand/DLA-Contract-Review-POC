@@ -45,10 +45,14 @@ namespace IDP_DF_TR
             var connection = new ISConnections(services.Container).DataService.DefaultConnection;
             if (body.TryGetValue("SourceFileName", out var sourceFileName) &&
                 sourceFileName is string fileName &&
-                !string.IsNullOrWhiteSpace(fileName) &&
-                await RecordExistsAsync(connection, fileName))
+                !string.IsNullOrWhiteSpace(fileName))
             {
-                return;
+                var existingRecordId = await FindExistingRecordIdAsync(connection, fileName);
+                if (!string.IsNullOrWhiteSpace(existingRecordId))
+                {
+                    await ReplaceRecordAsync(connection, existingRecordId, body);
+                    return;
+                }
             }
 
             var configuration = new CodedConnectorConfiguration(
@@ -68,12 +72,12 @@ namespace IDP_DF_TR
             await connection.ExecuteAsync(configuration, request);
         }
 
-        private static async Task<bool> RecordExistsAsync(dynamic connection, string sourceFileName)
+        private static async Task<string?> FindExistingRecordIdAsync(dynamic connection, string sourceFileName)
         {
             var configuration = new CodedConnectorConfiguration(
                 connection: connection,
                 objectName: "QueryEntityRecordsCurated",
-                operation: Operation.Create,
+                operation: Operation.List,
                 httpMethod: "POST",
                 path: "/v2/{entityName}/qer");
 
@@ -92,12 +96,44 @@ namespace IDP_DF_TR
             var response = await connection.ExecuteAsync(configuration, request);
             if (response is null)
             {
-                return false;
+                return null;
             }
 
             using var responseDocument = JsonDocument.Parse(JsonSerializer.Serialize(response));
-            return responseDocument.RootElement.ValueKind == JsonValueKind.Array &&
-                responseDocument.RootElement.GetArrayLength() > 0;
+            if (responseDocument.RootElement.ValueKind != JsonValueKind.Array ||
+                responseDocument.RootElement.GetArrayLength() == 0)
+            {
+                return null;
+            }
+
+            var firstRecord = responseDocument.RootElement[0];
+            return firstRecord.TryGetProperty("Id", out JsonElement id) ? id.GetString() : null;
+        }
+
+        private static async Task ReplaceRecordAsync(
+            dynamic connection,
+            string recordId,
+            IDictionary<string, object?> body)
+        {
+            var configuration = new CodedConnectorConfiguration(
+                connection: connection,
+                objectName: "UpdateEntityRecordV2",
+                operation: Operation.Replace,
+                httpMethod: "PUT",
+                path: "/v2/{entityName}/UpdateEntityRecord");
+
+            var request = new ConnectorRequest
+            {
+                PathParameters = new() { ["entityName"] = "DLADataService" },
+                QueryParameters = new()
+                {
+                    ["recordId"] = recordId,
+                    ["expansionLevel"] = "1"
+                },
+                BodyParameters = new Dictionary<string, object?>(body)
+            };
+
+            await connection.ExecuteAsync(configuration, request);
         }
 
         private static string EscapeCeqlValue(string value)
