@@ -10,8 +10,15 @@
         "type": "object",
         "properties": {
           "contractDataJson": {
-            "type": "string",
-            "description": "Consolidated JSON payload assembled by Maestro from all DU workflow outputs for a single contract review package."
+            "type": "object",
+            "description": "Consolidated JSON payload wrapper assembled by Maestro from all DU workflow outputs for a single contract review package.",
+            "properties": {
+              "payload": {
+                "type": "string",
+                "description": "Prefixed JSON text. Remove DLA_JSON_PAYLOAD: before parsing."
+              }
+            },
+            "additionalProperties": true
           }
         },
         "required": []

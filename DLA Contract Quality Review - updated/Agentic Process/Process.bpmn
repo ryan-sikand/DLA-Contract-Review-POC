@@ -113,7 +113,7 @@
             <uipath:inputSchema><![CDATA[{"type":"object","properties":{"dd2579DocumentPath":{"type":"string"},"dd2579ContractDataJson":{"type":"string"},"sf1449ContractDataJson":{"type":"string"},"saadContractDataJson":{"type":"string"},"dftrContractDataJson":{"type":"string"}}}]]></uipath:inputSchema>
           </uipath:context>
           <uipath:input name="args" type="json" target="bodyField"><![CDATA[{"dd2579DocumentPath":"=vars.dd2579DocumentPath","dd2579ContractDataJson":"=vars.dd2579ContractDataJson","sf1449ContractDataJson":"=vars.sf1449ContractDataJson","saadContractDataJson":"=vars.saadContractDataJson","dftrContractDataJson":"=vars.dftrContractDataJson"}]]></uipath:input>
-          <uipath:output name="contractDataJson" type="string" var="contractDataJson" source="=result.response" />
+          <uipath:output name="contractDataJson" type="string" var="contractDataJson" source="=result.response.contractDataJson" />
         </uipath:mapping>
       </bpmn:extensionElements>
       <bpmn:incoming>edge_dftr_consolidate</bpmn:incoming>
@@ -177,11 +177,18 @@ function parseDocuments(documentType, payload) {
   }
 }
 
+var inputArgs = typeof args === "object" && args ? args : {};
+var inDd2579DocumentPath = (typeof dd2579DocumentPath !== "undefined" && dd2579DocumentPath) || inputArgs.dd2579DocumentPath || "";
+var inDd2579ContractDataJson = (typeof dd2579ContractDataJson !== "undefined" && dd2579ContractDataJson) || inputArgs.dd2579ContractDataJson || "";
+var inSf1449ContractDataJson = (typeof sf1449ContractDataJson !== "undefined" && sf1449ContractDataJson) || inputArgs.sf1449ContractDataJson || "";
+var inSaadContractDataJson = (typeof saadContractDataJson !== "undefined" && saadContractDataJson) || inputArgs.saadContractDataJson || "";
+var inDftrContractDataJson = (typeof dftrContractDataJson !== "undefined" && dftrContractDataJson) || inputArgs.dftrContractDataJson || "";
+
 var documents = []
-  .concat(parseDocuments("DD2579", dd2579ContractDataJson))
-  .concat(parseDocuments("SF1449", sf1449ContractDataJson))
-  .concat(parseDocuments("SAAD", saadContractDataJson))
-  .concat(parseDocuments("DF_TR", dftrContractDataJson));
+  .concat(parseDocuments("DD2579", inDd2579ContractDataJson))
+  .concat(parseDocuments("SF1449", inSf1449ContractDataJson))
+  .concat(parseDocuments("SAAD", inSaadContractDataJson))
+  .concat(parseDocuments("DF_TR", inDftrContractDataJson));
 
 var batchId = "";
 for (var i = 0; i < documents.length; i++) {
@@ -201,13 +208,15 @@ var consolidated = {
   },
   threeWayMatch: {
     primaryDocumentType: "DD2579",
-    dd2579DocumentPath: dd2579DocumentPath || "",
+    dd2579DocumentPath: inDd2579DocumentPath,
     comparisonDocumentTypes: ["SF1449", "SAAD", "DF_TR"]
   },
   documents: documents
 };
 
-return { response: JSON.stringify(consolidated) };
+return {
+  contractDataJson: JSON.stringify(consolidated)
+};
 ]]></bpmn:script>
     </bpmn:scriptTask>
     <bpmn:serviceTask id="Activity_Contract_Agent" name="Contract Validation Agent">
@@ -219,7 +228,7 @@ return { response: JSON.stringify(consolidated) };
             <uipath:input name="folderPath" type="string" value="=bindings.bAgentFolderPath" />
             <uipath:input name="_label" type="string" value="Contract Validation Agent" />
           </uipath:context>
-          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"contractDataJson":"=js:vars.contractDataJson"}]]></uipath:input>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"contractDataJson":{"payload":"=js:'DLA_JSON_PAYLOAD:' + JSON.stringify({source:'Maestro',dataFabric:{entityName:'DLADataService',entityId:'73b82488-f560-f111-8fcb-002248a16d28',sourceOfTruth:true},threeWayMatch:{primaryDocumentType:'DD2579',dd2579DocumentPath:vars.dd2579DocumentPath,comparisonDocumentTypes:['SF1449','SAAD','DF_TR']},documents:[].concat((JSON.parse(vars.dd2579ContractDataJson||'{}').documents)||[]).concat((JSON.parse(vars.sf1449ContractDataJson||'{}').documents)||[]).concat((JSON.parse(vars.saadContractDataJson||'{}').documents)||[]).concat((JSON.parse(vars.dftrContractDataJson||'{}').documents)||[])})"}}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorAgent" />
           <uipath:output name="content" type="string" source="=content" var="content" />
           <uipath:output name="excelReportRowsJson" type="string" source="=excelReportRowsJson" var="excelReportRowsJson" />
