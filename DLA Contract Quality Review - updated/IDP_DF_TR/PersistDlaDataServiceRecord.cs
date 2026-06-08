@@ -44,11 +44,11 @@ namespace IDP_DF_TR
             NormalizeFileIdentity(body);
 
             var connection = new ISConnections(services.Container).DataService.DefaultConnection;
-            if (body.TryGetValue("SourceFileName", out var sourceFileName) &&
-                sourceFileName is string fileName &&
-                !string.IsNullOrWhiteSpace(fileName))
+            var recordKey = TryGetBodyString(body, "DocumentRecordKey");
+            var fileName = TryGetBodyString(body, "SourceFileName");
+            if (!string.IsNullOrWhiteSpace(recordKey) || !string.IsNullOrWhiteSpace(fileName))
             {
-                var existingRecordIds = await FindExistingRecordIdsAsync(connection, fileName);
+                var existingRecordIds = await FindExistingRecordIdsAsync(connection, recordKey, fileName);
                 if (existingRecordIds.Count > 0)
                 {
                     await ReplaceRecordAsync(connection, existingRecordIds[0], body);
@@ -56,6 +56,15 @@ namespace IDP_DF_TR
                 }
             }
 
+            await CreateRecordAsync(connection, body, recordKey, fileName);
+        }
+
+        private static async Task CreateRecordAsync(
+            dynamic connection,
+            IDictionary<string, object?> body,
+            string? recordKey,
+            string? fileName)
+        {
             var configuration = new CodedConnectorConfiguration(
                 connection: connection,
                 objectName: "CreateEntityRecordCurated",
@@ -67,13 +76,50 @@ namespace IDP_DF_TR
             {
                 PathParameters = new() { ["entityName"] = "DLADataService" },
                 QueryParameters = new() { ["expansionLevel"] = "1" },
-                BodyParameters = body
+                BodyParameters = new Dictionary<string, object?>(body)
             };
 
-            await connection.ExecuteAsync(configuration, request);
+            try
+            {
+                await connection.ExecuteAsync(configuration, request);
+            }
+            catch (Exception ex) when (IsUniqueViolation(ex))
+            {
+                var existingRecordIds = await FindExistingRecordIdsAsync(connection, recordKey, fileName);
+                if (existingRecordIds.Count > 0)
+                {
+                    await ReplaceRecordAsync(connection, existingRecordIds[0], body);
+                    return;
+                }
+
+                throw;
+            }
         }
 
-        private static async Task<IReadOnlyList<string>> FindExistingRecordIdsAsync(dynamic connection, string sourceFileName)
+        private static async Task<IReadOnlyList<string>> FindExistingRecordIdsAsync(
+            dynamic connection,
+            string? documentRecordKey,
+            string? sourceFileName)
+        {
+            var ids = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(documentRecordKey))
+            {
+                ids.AddRange(await FindExistingRecordIdsByFieldAsync(connection, "DocumentRecordKey", documentRecordKey));
+            }
+
+            if (ids.Count == 0 && !string.IsNullOrWhiteSpace(sourceFileName))
+            {
+                ids.AddRange(await FindExistingRecordIdsByFieldAsync(connection, "SourceFileName", sourceFileName));
+            }
+
+            return ids;
+        }
+
+        private static async Task<IReadOnlyList<string>> FindExistingRecordIdsByFieldAsync(
+            dynamic connection,
+            string fieldName,
+            string fieldValue)
         {
             var configuration = new CodedConnectorConfiguration(
                 connection: connection,
@@ -99,9 +145,9 @@ namespace IDP_DF_TR
                         {
                             new Dictionary<string, object?>
                             {
-                                ["fieldName"] = "SourceFileName",
+                                ["fieldName"] = fieldName,
                                 ["operator"] = "=",
-                                ["value"] = sourceFileName
+                                ["value"] = fieldValue
                             }
                         }
                     }
@@ -116,6 +162,14 @@ namespace IDP_DF_TR
 
             using var responseDocument = JsonDocument.Parse(JsonSerializer.Serialize(response));
             return ExtractRecordIds(responseDocument.RootElement);
+        }
+
+        private static bool IsUniqueViolation(Exception ex)
+        {
+            var message = ex.ToString();
+            return message.Contains("uniqueness violation", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("repeated value", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("Error Number: 2627", StringComparison.OrdinalIgnoreCase);
         }
 
         private static async Task ReplaceRecordAsync(
