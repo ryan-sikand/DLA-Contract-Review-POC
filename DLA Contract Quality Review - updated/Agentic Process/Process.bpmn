@@ -11,16 +11,22 @@
         <uipath:inputOutput id="contractDataJson" name="contractDataJson" type="string" />
         <uipath:inputOutput id="content" name="content" type="string" />
         <uipath:inputOutput id="excelReportRowsJson" name="excelReportRowsJson" type="string" />
+        <uipath:inputOutput id="bucketFilePath" name="bucketFilePath" type="string" />
+        <uipath:inputOutput id="sharePointUploadStatus" name="sharePointUploadStatus" type="string" />
+        <uipath:inputOutput id="localWorkbookPath" name="localWorkbookPath" type="string" />
         <uipath:inputOutput id="excelFindingsFile" name="excelFindingsFile" type="jsonSchema"><![CDATA[{"type":"object","properties":{"ID":{"type":"string"},"FullName":{"type":"string"},"MimeType":{"type":"string"},"Metadata":{"type":"object","additionalProperties":{"type":"string"}}},"required":["ID"],"x-uipath-resource-kind":"JobAttachment"}]]></uipath:inputOutput>
         <uipath:inputOutput id="errorDD2579" name="Error" type="jsonSchema" elementId="Activity_IDP_DD2579"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
         <uipath:inputOutput id="errorSF1449" name="Error" type="jsonSchema" elementId="Activity_IDP_SF1449"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
         <uipath:inputOutput id="errorSAAD" name="Error" type="jsonSchema" elementId="Activity_IDP_SAAD"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
         <uipath:inputOutput id="errorDFTR" name="Error" type="jsonSchema" elementId="Activity_IDP_DF_TR"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
         <uipath:inputOutput id="errorAgent" name="Error" type="jsonSchema" elementId="Activity_Contract_Agent"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
+        <uipath:inputOutput id="errorExportFindings" name="Error" type="jsonSchema" elementId="Activity_Export_Findings"><![CDATA[{"type":"object","properties":{"code":{"type":"string"},"message":{"type":"string"},"detail":{"type":"string"},"category":{"type":"string"},"status":{"type":"number"},"element":{"type":"string"}}}]]></uipath:inputOutput>
       </uipath:variables>
       <uipath:bindings version="v1">
         <uipath:binding id="bAgentFolderPath" name="folderPath" type="string" resource="process" resourceSubType="Agent" resourceKey="Contract Validation Agent" propertyAttribute="folderPath" />
         <uipath:binding id="bAgentName" name="name" type="string" default="Contract Validation Agent" resource="process" resourceSubType="Agent" resourceKey="Contract Validation Agent" propertyAttribute="name" />
+        <uipath:binding id="bExportFindingsFolderPath" name="folderPath" type="string" resource="process" resourceKey="Export Contract Findings" propertyAttribute="folderPath" />
+        <uipath:binding id="bExportFindingsName" name="name" type="string" default="Export Contract Findings" resource="process" resourceKey="Export Contract Findings" propertyAttribute="name" />
         <uipath:binding id="bDD2579FolderPath" name="folderPath" type="string" resource="process" resourceKey="IDP_DD2579" propertyAttribute="folderPath" />
         <uipath:binding id="bDD2579Name" name="name" type="string" default="IDP_DD2579" resource="process" resourceKey="IDP_DD2579" propertyAttribute="name" />
         <uipath:binding id="bSF1449FolderPath" name="folderPath" type="string" resource="process" resourceKey="IDP_SF1449" propertyAttribute="folderPath" />
@@ -236,10 +242,33 @@ return {
         </uipath:activity>
       </bpmn:extensionElements>
       <bpmn:incoming>edge_consolidate_agent</bpmn:incoming>
-      <bpmn:outgoing>edge_agent_end</bpmn:outgoing>
+      <bpmn:outgoing>edge_agent_export</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_Export_Findings" name="Export Findings">
+      <bpmn:extensionElements>
+        <uipath:activity version="v1">
+          <uipath:type value="Orchestrator.StartJob" version="v2" />
+          <uipath:context>
+            <uipath:input name="name" type="string" value="=bindings.bExportFindingsName" />
+            <uipath:input name="folderPath" type="string" value="=bindings.bExportFindingsFolderPath" />
+            <uipath:input name="_label" type="string" value="Export Contract Findings" />
+            <uipath:input name="excelReportRowsJson" type="string" value="=vars.excelReportRowsJson" />
+            <uipath:input name="agentContentJson" type="string" value="=vars.content" />
+            <uipath:input name="storageBucketName" type="string" value="DLA_Contract_Docs" />
+            <uipath:input name="orchestratorFolderPath" type="string" value="AMER Presales/Public Sector/DLA Contract Quality Review POC" />
+            <uipath:input name="sharePointFolderUrl" type="string" value="https://uipath.sharepoint.com/sites/CustomerSuccess-Publicsector/Shared%20Documents/SE%20-%20PubSec/2.%20Demos/DLA%20Contract%20Quality%20Review" />
+          </uipath:context>
+          <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorExportFindings" />
+          <uipath:output name="bucketFilePath" type="string" source="=bucketFilePath" var="bucketFilePath" />
+          <uipath:output name="sharePointUploadStatus" type="string" source="=sharePointUploadStatus" var="sharePointUploadStatus" />
+          <uipath:output name="localWorkbookPath" type="string" source="=localWorkbookPath" var="localWorkbookPath" />
+        </uipath:activity>
+      </bpmn:extensionElements>
+      <bpmn:incoming>edge_agent_export</bpmn:incoming>
+      <bpmn:outgoing>edge_export_end</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:endEvent id="Event_end" name="End event">
-      <bpmn:incoming>edge_agent_end</bpmn:incoming>
+      <bpmn:incoming>edge_export_end</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="edge_start_dd2579" sourceRef="Event_start" targetRef="Activity_IDP_DD2579" />
     <bpmn:sequenceFlow id="edge_dd2579_sf1449" sourceRef="Activity_IDP_DD2579" targetRef="Activity_IDP_SF1449" />
@@ -247,7 +276,8 @@ return {
     <bpmn:sequenceFlow id="edge_saad_dftr" sourceRef="Activity_IDP_SAAD" targetRef="Activity_IDP_DF_TR" />
     <bpmn:sequenceFlow id="edge_dftr_consolidate" sourceRef="Activity_IDP_DF_TR" targetRef="Activity_Consolidate_DU" />
     <bpmn:sequenceFlow id="edge_consolidate_agent" sourceRef="Activity_Consolidate_DU" targetRef="Activity_Contract_Agent" />
-    <bpmn:sequenceFlow id="edge_agent_end" sourceRef="Activity_Contract_Agent" targetRef="Event_end" />
+    <bpmn:sequenceFlow id="edge_agent_export" sourceRef="Activity_Contract_Agent" targetRef="Activity_Export_Findings" />
+    <bpmn:sequenceFlow id="edge_export_end" sourceRef="Activity_Export_Findings" targetRef="Event_end" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
@@ -294,9 +324,15 @@ return {
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="S_Event_end" bpmnElement="Event_end">
-        <dc:Bounds x="1260" y="200" width="36" height="36" />
+        <dc:Bounds x="1450" y="200" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1248" y="241" width="60" height="14" />
+          <dc:Bounds x="1438" y="241" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Activity_Export_Findings" bpmnElement="Activity_Export_Findings">
+        <dc:Bounds x="1250" y="178" width="130" height="80" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1250" y="263" width="130" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_edge_start_dd2579" bpmnElement="edge_start_dd2579">
@@ -323,9 +359,13 @@ return {
         <di:waypoint x="1030" y="218" />
         <di:waypoint x="1080" y="218" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_edge_agent_end" bpmnElement="edge_agent_end">
+      <bpmndi:BPMNEdge id="BPMNEdge_edge_agent_export" bpmnElement="edge_agent_export">
         <di:waypoint x="1200" y="218" />
-        <di:waypoint x="1260" y="218" />
+        <di:waypoint x="1250" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_edge_export_end" bpmnElement="edge_export_end">
+        <di:waypoint x="1380" y="218" />
+        <di:waypoint x="1450" y="218" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

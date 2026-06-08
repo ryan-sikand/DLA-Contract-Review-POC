@@ -1,0 +1,22 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "Export Contract Findings",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "9c02f72a-5d38-48ed-a500-d5b2233f3fe5",
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "Export Contract Findings"
+    },
+    "locks": [],
+    "key": "ddc8e517-48c8-4be8-9425-89d7e952f2da",
+    "files": []
+  }
+}

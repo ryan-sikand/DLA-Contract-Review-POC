@@ -1,0 +1,6 @@
+{
+  "Name": "Export Contract Findings",
+  "ProjectType": "Process",
+  "Description": "Creates the DLA Contract Quality Review Excel findings workbook and uploads it to Orchestrator storage and SharePoint.",
+  "MainFile": "ExportContractFindings.cs"
+}

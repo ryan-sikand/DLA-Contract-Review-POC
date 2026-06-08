@@ -1,0 +1,44 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "Export Contract Findings",
+    "kind": "process",
+    "type": "process",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "projectKey": "9c02f72a-5d38-48ed-a500-d5b2233f3fe5",
+    "dependencies": [
+      {
+        "kind": "package",
+        "name": "Export Contract Findings"
+      }
+    ],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Process",
+      "name": "Export Contract Findings",
+      "package": {
+        "key": "ddc8e517-48c8-4be8-9425-89d7e952f2da"
+      },
+      "inputArguments": "{}",
+      "jobPriority": "Medium",
+      "jobRecording": "Disabled",
+      "targetFrameworkValue": "Portable",
+      "duration": 40,
+      "frequency": 500,
+      "quality": 100,
+      "remoteControlAccess": "None",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180
+    },
+    "locks": [],
+    "key": "2abff79e-1aab-4dfd-8ab5-b274ffbc1db1",
+    "files": []
+  }
+}

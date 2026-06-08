@@ -1,37 +1,42 @@
 {
-    "DocVersion": "1.0.0",
-    "StudioMinVersion": "2025.04.0",
-    "SolutionId": "33e26b6e-c6ea-4b82-3347-08dec0aa4471",
-    "Projects": [
-        {
-            "Type": "ProcessOrchestration",
-            "ProjectRelativePath": "Agentic Process/project.uiproj",
-            "Id": "b3f91ac8-417f-4a3c-90a9-e896daf08533"
-        },
-        {
-            "Type": "Agent",
-            "ProjectRelativePath": "Contract Validation Agent/project.uiproj",
-            "Id": "6b615eab-6315-4de3-8401-7b3d41440270"
-        },
-        {
-            "Type": "Process",
-            "ProjectRelativePath": "IDP_DD2579/project.uiproj",
-            "Id": "aa96f717-3a23-4c3f-88d9-59d0126acaea"
-        },
-        {
-            "Type": "Process",
-            "ProjectRelativePath": "IDP_DF_TR/project.uiproj",
-            "Id": "e927b2f1-e7f6-48f8-b8eb-6a48903b0386"
-        },
-        {
-            "Type": "Process",
-            "ProjectRelativePath": "IDP_SAAD/project.uiproj",
-            "Id": "e62e24fa-fca8-4911-85ba-8884f6d5670e"
-        },
-        {
-            "Type": "Process",
-            "ProjectRelativePath": "IDP_SF1449/project.uiproj",
-            "Id": "e897439d-a1e7-40b5-867b-7ed0210506bd"
-        }
-    ]
+  "DocVersion": "1.0.0",
+  "StudioMinVersion": "2025.04.0",
+  "SolutionId": "33e26b6e-c6ea-4b82-3347-08dec0aa4471",
+  "Projects": [
+    {
+      "Type": "ProcessOrchestration",
+      "ProjectRelativePath": "Agentic Process/project.uiproj",
+      "Id": "b3f91ac8-417f-4a3c-90a9-e896daf08533"
+    },
+    {
+      "Type": "Agent",
+      "ProjectRelativePath": "Contract Validation Agent/project.uiproj",
+      "Id": "6b615eab-6315-4de3-8401-7b3d41440270"
+    },
+    {
+      "Type": "Process",
+      "ProjectRelativePath": "IDP_DD2579/project.uiproj",
+      "Id": "aa96f717-3a23-4c3f-88d9-59d0126acaea"
+    },
+    {
+      "Type": "Process",
+      "ProjectRelativePath": "IDP_DF_TR/project.uiproj",
+      "Id": "e927b2f1-e7f6-48f8-b8eb-6a48903b0386"
+    },
+    {
+      "Type": "Process",
+      "ProjectRelativePath": "IDP_SAAD/project.uiproj",
+      "Id": "e62e24fa-fca8-4911-85ba-8884f6d5670e"
+    },
+    {
+      "Type": "Process",
+      "ProjectRelativePath": "IDP_SF1449/project.uiproj",
+      "Id": "e897439d-a1e7-40b5-867b-7ed0210506bd"
+    },
+    {
+      "Type": "Process",
+      "ProjectRelativePath": "Export Contract Findings\\project.uiproj",
+      "Id": "9c02f72a-5d38-48ed-a500-d5b2233f3fe5"
+    }
+  ]
 }

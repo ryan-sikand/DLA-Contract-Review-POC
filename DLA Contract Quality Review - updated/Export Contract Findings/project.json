@@ -1,0 +1,97 @@
+{
+  "name": "Export Contract Findings",
+  "description": "Creates the DLA Contract Quality Review Excel findings workbook and uploads it to Orchestrator storage and SharePoint.",
+  "main": "ExportContractFindings.cs",
+  "dependencies": {
+    "UiPath.IntegrationService.Activities": "1.27.0-beta.20260529.5",
+    "UiPath.MicrosoftOffice365.Activities": "3.9.11",
+    "UiPath.System.Activities": "[26.4.1-preview]"
+  },
+  "webServices": [],
+  "entitiesStores": [],
+  "schemaVersion": "4.0",
+  "studioVersion": "26.0.194.0",
+  "projectVersion": "1.0.0",
+  "runtimeOptions": {
+    "autoDispose": false,
+    "netFrameworkLazyLoading": false,
+    "isPausable": false,
+    "isAttended": false,
+    "requiresUserInteraction": false,
+    "supportsPersistence": false,
+    "workflowSerialization": "NewtonsoftJson",
+    "excludedLoggedData": [
+      "Private:*",
+      "*password*"
+    ],
+    "executionType": "Workflow",
+    "readyForPiP": false,
+    "startsInPiP": false,
+    "mustRestoreAllDependencies": true,
+    "pipType": "ChildSession"
+  },
+  "designOptions": {
+    "projectProfile": "Developement",
+    "outputType": "Process",
+    "libraryOptions": {
+      "privateWorkflows": []
+    },
+    "processOptions": {
+      "ignoredFiles": []
+    },
+    "fileInfoCollection": [],
+    "saveToCloud": false
+  },
+  "expressionLanguage": "CSharp",
+  "isTemplate": false,
+  "templateProjectData": {},
+  "publishData": {},
+  "targetFramework": "Portable",
+  "entryPoints": [
+    {
+      "filePath": "ExportContractFindings.cs",
+      "uniqueId": "b6e3e892-6d64-4b3c-9d7d-8efcb102c8ab",
+      "input": [
+        {
+          "name": "excelReportRowsJson",
+          "type": "String",
+          "required": true
+        },
+        {
+          "name": "agentContentJson",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "storageBucketName",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "orchestratorFolderPath",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "sharePointFolderUrl",
+          "type": "String",
+          "required": false
+        }
+      ],
+      "output": [
+        {
+          "name": "bucketFilePath",
+          "type": "String"
+        },
+        {
+          "name": "sharePointUploadStatus",
+          "type": "String"
+        },
+        {
+          "name": "localWorkbookPath",
+          "type": "String"
+        }
+      ]
+    }
+  ]
+}
