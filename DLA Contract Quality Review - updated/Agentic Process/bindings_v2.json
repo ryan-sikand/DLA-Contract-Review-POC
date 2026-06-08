@@ -26,6 +26,28 @@
     },
     {
       "resource": "process",
+      "key": "Export Contract Findings",
+      "id": "processExport Contract Findings",
+      "value": {
+        "folderPath": {
+          "isExpression": false,
+          "displayName": "Folder path"
+        },
+        "name": {
+          "defaultValue": "Export Contract Findings",
+          "isExpression": false,
+          "displayName": "Process name"
+        }
+      },
+      "metadata": {
+        "ActivityName": "Export Findings",
+        "BindingsVersion": "2.2",
+        "DisplayLabel": "name",
+        "SolutionsSupport": "true"
+      }
+    },
+    {
+      "resource": "process",
       "key": "IDP_DD2579",
       "id": "processIDP_DD2579",
       "value": {

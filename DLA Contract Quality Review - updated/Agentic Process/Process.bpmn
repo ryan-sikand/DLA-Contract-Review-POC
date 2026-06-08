@@ -252,12 +252,8 @@ return {
             <uipath:input name="name" type="string" value="=bindings.bExportFindingsName" />
             <uipath:input name="folderPath" type="string" value="=bindings.bExportFindingsFolderPath" />
             <uipath:input name="_label" type="string" value="Export Contract Findings" />
-            <uipath:input name="excelReportRowsJson" type="string" value="=vars.excelReportRowsJson" />
-            <uipath:input name="agentContentJson" type="string" value="=vars.content" />
-            <uipath:input name="storageBucketName" type="string" value="DLA_Contract_Docs" />
-            <uipath:input name="orchestratorFolderPath" type="string" value="AMER Presales/Public Sector/DLA Contract Quality Review POC" />
-            <uipath:input name="sharePointFolderUrl" type="string" value="https://uipath.sharepoint.com/sites/CustomerSuccess-Publicsector/Shared%20Documents/SE%20-%20PubSec/2.%20Demos/DLA%20Contract%20Quality%20Review" />
           </uipath:context>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"excelReportRowsJson":"=vars.excelReportRowsJson","agentContentJson":"=vars.content","storageBucketName":"DLA_Contract_Docs","orchestratorFolderPath":"AMER Presales/Public Sector/DLA Contract Quality Review POC","sharePointFolderUrl":"https://uipath.sharepoint.com/sites/CustomerSuccess-Publicsector/Shared%20Documents/SE%20-%20PubSec/2.%20Demos/DLA%20Contract%20Quality%20Review"}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorExportFindings" />
           <uipath:output name="bucketFilePath" type="string" source="=bucketFilePath" var="bucketFilePath" />
           <uipath:output name="sharePointUploadStatus" type="string" source="=sharePointUploadStatus" var="sharePointUploadStatus" />
