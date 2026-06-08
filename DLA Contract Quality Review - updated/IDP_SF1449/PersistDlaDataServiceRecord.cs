@@ -51,7 +51,7 @@ namespace IDP_SF1449
                 var existingRecordIds = await FindExistingRecordIdsAsync(connection, recordKey, fileName);
                 if (existingRecordIds.Count > 0)
                 {
-                    await ReplaceRecordAsync(connection, existingRecordIds[0], body);
+                    await TryReplaceRecordAsync(connection, existingRecordIds[0], body);
                     return;
                 }
             }
@@ -88,11 +88,11 @@ namespace IDP_SF1449
                 var existingRecordIds = await FindExistingRecordIdsAsync(connection, recordKey, fileName);
                 if (existingRecordIds.Count > 0)
                 {
-                    await ReplaceRecordAsync(connection, existingRecordIds[0], body);
+                    await TryReplaceRecordAsync(connection, existingRecordIds[0], body);
                     return;
                 }
 
-                throw;
+                return;
             }
         }
 
@@ -170,6 +170,21 @@ namespace IDP_SF1449
             return message.Contains("uniqueness violation", StringComparison.OrdinalIgnoreCase)
                 || message.Contains("repeated value", StringComparison.OrdinalIgnoreCase)
                 || message.Contains("Error Number: 2627", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static async Task TryReplaceRecordAsync(
+            dynamic connection,
+            string recordId,
+            IDictionary<string, object?> body)
+        {
+            try
+            {
+                await ReplaceRecordAsync(connection, recordId, body);
+            }
+            catch (Exception ex) when (IsUniqueViolation(ex))
+            {
+                return;
+            }
         }
 
         private static async Task ReplaceRecordAsync(
