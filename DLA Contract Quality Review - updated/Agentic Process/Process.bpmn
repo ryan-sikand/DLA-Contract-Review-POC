@@ -119,29 +119,69 @@
       <bpmn:incoming>edge_dftr_consolidate</bpmn:incoming>
       <bpmn:outgoing>edge_consolidate_agent</bpmn:outgoing>
       <bpmn:script><![CDATA[
-function parseDocument(documentType, payload) {
+function normalizeDocument(documentType, parsedDocument, sourceEnvelope) {
+  if (!parsedDocument || typeof parsedDocument !== "object" || Array.isArray(parsedDocument)) {
+    return {
+      documentType: documentType,
+      processingState: "ParseError",
+      errorDetails: "Document payload was not a JSON object.",
+      extractedJson: parsedDocument
+    };
+  }
+
+  if (!parsedDocument.documentType) {
+    parsedDocument.documentType = documentType;
+  }
+  parsedDocument.sourceWorkflowDocumentType = sourceEnvelope && sourceEnvelope.documentType ? sourceEnvelope.documentType : documentType;
+  parsedDocument.sourceWorkflowContractBatchId = sourceEnvelope && sourceEnvelope.contractBatchId ? sourceEnvelope.contractBatchId : parsedDocument.contractBatchId || "";
+  return parsedDocument;
+}
+
+function parseDocuments(documentType, payload) {
   if (!payload || String(payload).trim() === "") {
-    return { documentType: documentType, processingState: "Missing", extractedJson: null };
+    return [{ documentType: documentType, processingState: "Missing", extractedJson: null }];
   }
 
   try {
-    return JSON.parse(payload);
+    var parsed = JSON.parse(payload);
+
+    if (Array.isArray(parsed)) {
+      return parsed.map(function (item) {
+        return normalizeDocument(documentType, item, { documentType: documentType });
+      });
+    }
+
+    if (parsed && Array.isArray(parsed.documents)) {
+      if (parsed.documents.length === 0) {
+        return [{
+          documentType: documentType,
+          processingState: "NoRecords",
+          contractBatchId: parsed.contractBatchId || "",
+          extractedJson: null
+        }];
+      }
+
+      return parsed.documents.map(function (item) {
+        return normalizeDocument(documentType, item, parsed);
+      });
+    }
+
+    return [normalizeDocument(documentType, parsed, { documentType: documentType })];
   } catch (error) {
-    return {
+    return [{
       documentType: documentType,
       processingState: "ParseError",
       errorDetails: String(error),
       extractedJson: payload
-    };
+    }];
   }
 }
 
-var documents = [
-  parseDocument("DD2579", dd2579ContractDataJson),
-  parseDocument("SF1449", sf1449ContractDataJson),
-  parseDocument("SAAD", saadContractDataJson),
-  parseDocument("DF_TR", dftrContractDataJson)
-];
+var documents = []
+  .concat(parseDocuments("DD2579", dd2579ContractDataJson))
+  .concat(parseDocuments("SF1449", sf1449ContractDataJson))
+  .concat(parseDocuments("SAAD", saadContractDataJson))
+  .concat(parseDocuments("DF_TR", dftrContractDataJson));
 
 var batchId = "";
 for (var i = 0; i < documents.length; i++) {

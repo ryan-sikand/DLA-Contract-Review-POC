@@ -95,6 +95,7 @@
       <Variable x:TypeArguments="uisad1:IDocumentData(uisasedb:DLAContractSF1449SF1449V10)" Name="sF1449DocumentData" />
       <Variable x:TypeArguments="x:String" Name="contractBatchId" />
       <Variable x:TypeArguments="x:String" Name="contractDataJson" />
+      <Variable x:TypeArguments="x:String" Name="contractDataItemsJson" />
     </Sequence.Variables>
     <ui:ManualTrigger Result="{x:Null}" DisplayName="Manual Trigger" sap2010:WorkflowViewState.IdRef="ManualTrigger_1" />
     <Assign DisplayName="Create contract review batch id" sap2010:WorkflowViewState.IdRef="Assign_SF1449_BatchId">
@@ -151,12 +152,21 @@
                   <InArgument x:TypeArguments="x:String" x:Key="in_RecordJson">[contractDataJson]</InArgument>
                 </scg:Dictionary>
               </ui:InvokeWorkflowFile.Arguments>
-            </ui:InvokeWorkflowFile>            <Assign DisplayName="Set SF1449 workflow output" sap2010:WorkflowViewState.IdRef="Assign_SF1449_Output">
+            </ui:InvokeWorkflowFile>
+            <Assign DisplayName="Append SF1449 file JSON to workflow output" sap2010:WorkflowViewState.IdRef="Assign_SF1449_AppendOutput">
+              <Assign.To>
+                <OutArgument x:TypeArguments="x:String">[contractDataItemsJson]</OutArgument>
+              </Assign.To>
+              <Assign.Value>
+                <InArgument x:TypeArguments="x:String">[If(String.IsNullOrWhiteSpace(contractDataItemsJson), contractDataJson, contractDataItemsJson &amp; "," &amp; contractDataJson)]</InArgument>
+              </Assign.Value>
+            </Assign>
+            <Assign DisplayName="Set SF1449 workflow output" sap2010:WorkflowViewState.IdRef="Assign_SF1449_Output">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[out_ContractDataJson]</OutArgument>
               </Assign.To>
               <Assign.Value>
-                <InArgument x:TypeArguments="x:String">[contractDataJson]</InArgument>
+                <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentType", "SF1449"}, {"processingState", "Extracted"}, {"documents", Newtonsoft.Json.Linq.JArray.Parse("[" &amp; If(String.IsNullOrWhiteSpace(contractDataItemsJson), "", contractDataItemsJson) &amp; "]")}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
               </Assign.Value>
             </Assign>
             <ui:LogMessage DisplayName="Log Message" sap2010:WorkflowViewState.IdRef="LogMessage_3" Message="[&quot;File: &quot; &amp; downloadedFile.GetName() &amp; _&#xA;&quot; | Award Date: &quot; &amp; sF1449DocumentData.Data.AwardEffective.Value.ToString() &amp; _&#xA;&quot; | Solicitation Issue Date: &quot; &amp; sF1449DocumentData.Data.SOLICITATIONISSUEDATE.Value.ToString() &amp; _&#xA;&quot; | NAICS: &quot; &amp; sF1449DocumentData.Data.NorthAmericanIndustryClassificationStandardNAICS.Value.ToString() &amp; _&#xA;&quot; | PSC: &quot; &amp; sF1449DocumentData.Data.PSC.Value.ToString() &amp; _&#xA;&quot; | Size Standard: &quot; &amp; sF1449DocumentData.Data.SizeStandard.Value.ToString() &amp; _&#xA;&quot; | Issued By Code: &quot; &amp; sF1449DocumentData.Data.IssuedByCode.Value.ToString()]" />

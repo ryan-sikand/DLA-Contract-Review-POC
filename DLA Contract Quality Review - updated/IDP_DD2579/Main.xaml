@@ -103,6 +103,7 @@
       <Variable x:TypeArguments="uisad1:IDocumentData(uisasedb:DLAContractDD2579V2DD2579V8)" Name="dD2579DocumentData" />
       <Variable x:TypeArguments="x:String" Name="contractBatchId" />
       <Variable x:TypeArguments="x:String" Name="contractDataJson" />
+      <Variable x:TypeArguments="x:String" Name="contractDataItemsJson" />
     </Sequence.Variables>
     <ui:ManualTrigger Result="{x:Null}" DisplayName="Manual Trigger" sap2010:WorkflowViewState.IdRef="ManualTrigger_1" />
     <Assign DisplayName="Create contract review batch id" sap2010:WorkflowViewState.IdRef="Assign_DD2579_BatchId">
@@ -160,12 +161,20 @@
                 </scg:Dictionary>
               </ui:InvokeWorkflowFile.Arguments>
             </ui:InvokeWorkflowFile>
+            <Assign DisplayName="Append DD2579 file JSON to workflow output" sap2010:WorkflowViewState.IdRef="Assign_DD2579_AppendOutput">
+              <Assign.To>
+                <OutArgument x:TypeArguments="x:String">[contractDataItemsJson]</OutArgument>
+              </Assign.To>
+              <Assign.Value>
+                <InArgument x:TypeArguments="x:String">[If(String.IsNullOrWhiteSpace(contractDataItemsJson), contractDataJson, contractDataItemsJson &amp; "," &amp; contractDataJson)]</InArgument>
+              </Assign.Value>
+            </Assign>
             <Assign DisplayName="Set DD2579 workflow output" sap2010:WorkflowViewState.IdRef="Assign_DD2579_Output">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[out_ContractDataJson]</OutArgument>
               </Assign.To>
               <Assign.Value>
-                <InArgument x:TypeArguments="x:String">[contractDataJson]</InArgument>
+                <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentType", "DD2579"}, {"processingState", "Extracted"}, {"documents", Newtonsoft.Json.Linq.JArray.Parse("[" &amp; If(String.IsNullOrWhiteSpace(contractDataItemsJson), "", contractDataItemsJson) &amp; "]")}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
               </Assign.Value>
             </Assign>
             <ui:LogMessage DisplayName="Log Message" sap2010:WorkflowViewState.IdRef="LogMessage_3" Message="[&quot;File: &quot; &amp; downloadedFile.GetName() &amp; &quot; | NAICS: &quot; &amp; dD2579DocumentData.Data.NAICSCode.Value.ToString() &amp; &quot; | PSC: &quot; &amp; dD2579DocumentData.Data.ProductOrServiceCode.Value.ToString() &amp; &quot; | Size Standard: &quot; &amp; dD2579DocumentData.Data.SizeStandard.Value.ToString()]" />
