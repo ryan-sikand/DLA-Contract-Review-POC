@@ -219,7 +219,7 @@ return { response: JSON.stringify(consolidated) };
             <uipath:input name="folderPath" type="string" value="=bindings.bAgentFolderPath" />
             <uipath:input name="_label" type="string" value="Contract Validation Agent" />
           </uipath:context>
-          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"contractDataJson":"=vars.contractDataJson"}]]></uipath:input>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"contractDataJson":"=js:vars.contractDataJson"}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorAgent" />
           <uipath:output name="content" type="string" source="=content" var="content" />
           <uipath:output name="excelReportRowsJson" type="string" source="=excelReportRowsJson" var="excelReportRowsJson" />
