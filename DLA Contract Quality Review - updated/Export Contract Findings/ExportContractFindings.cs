@@ -19,6 +19,7 @@ namespace ExportContractFindings
         private const string DefaultBucketName = "DLA_Contract_Docs";
         private const string DefaultFolderPath = "AMER Presales/Public Sector/DLA Contract Quality Review POC";
         private const string DefaultSharePointFolderUrl = "https://uipath.sharepoint.com/sites/CustomerSuccess-Publicsector/Shared%20Documents/SE%20-%20PubSec/2.%20Demos/DLA%20Contract%20Quality%20Review";
+        private const string DefaultOneDriveConnectionId = "27b43e53-db23-4b85-ab3d-4c8693756122";
 
         [Workflow]
         public async Task<(string bucketFilePath, string sharePointUploadStatus, string localWorkbookPath)> Execute(
@@ -69,7 +70,7 @@ namespace ExportContractFindings
             try
             {
                 await Task.Yield();
-                var oneDrive = office365.OneDrive(new OneDriveConnection("765d339a-c285-47a9-b7cb-65f79d7b73e3", serviceContainer));
+                var oneDrive = office365.OneDrive(new OneDriveConnection(DefaultOneDriveConnectionId, serviceContainer));
                 var destination = oneDrive.GetFolder(sharePointFolderUrl);
                 var uploaded = oneDrive.UploadFile(localFilePath, destination, ConflictBehavior.Replace, null);
                 return $"Uploaded to SharePoint folder: {sharePointFolderUrl}; item: {uploaded.Name}";
