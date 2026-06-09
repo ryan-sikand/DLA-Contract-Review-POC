@@ -11,7 +11,28 @@
         "properties": {
           "dd2579DocumentPath": {
             "type": "string",
+            "default": "",
             "description": "Storage bucket file path or file-name suffix for the single DD2579 document used as the primary 3-way match input."
+          },
+          "sf1449DocumentPath1": {
+            "type": "string",
+            "default": "",
+            "description": "Storage bucket file path or file-name suffix for the first SF1449 document to process."
+          },
+          "sf1449DocumentPath2": {
+            "type": "string",
+            "default": "",
+            "description": "Storage bucket file path or file-name suffix for the second SF1449 document to process."
+          },
+          "saadDocumentPath": {
+            "type": "string",
+            "default": "",
+            "description": "Optional SAAD storage bucket file path or file-name suffix. Leave blank to skip SAAD processing."
+          },
+          "dftrDocumentPath": {
+            "type": "string",
+            "default": "",
+            "description": "Optional DF TR storage bucket file path or file-name suffix. Leave blank to skip DF TR processing."
           }
         },
         "required": []
@@ -26,6 +47,18 @@
           "excelReportRowsJson": {
             "type": "string",
             "description": "Excel-ready findings rows as JSON for downstream reporting."
+          },
+          "bucketFilePath": {
+            "type": "string",
+            "description": "Storage bucket path for the generated Excel workbook."
+          },
+          "sharePointUploadStatus": {
+            "type": "string",
+            "description": "SharePoint upload status and destination for the generated Excel workbook."
+          },
+          "localWorkbookPath": {
+            "type": "string",
+            "description": "Robot-local workbook path returned by the export workflow."
           },
           "excelFindingsFile": {
             "$ref": "#/definitions/job-attachment"

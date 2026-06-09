@@ -165,17 +165,8 @@ namespace ExportContractFindings
                 File.Delete(path);
             }
 
-            var exceptions = findings.Where(r => !string.IsNullOrWhiteSpace(Get(r, "Exception"))).ToList();
-            var sourceRecords = findings
-                .Select(r => new Dictionary<string, string>
-                {
-                    ["ContractBatchId"] = Get(r, "ContractBatchId"),
-                    ["DocumentType"] = Get(r, "DocumentType"),
-                    ["SourceFileName"] = Get(r, "SourceFileName"),
-                    ["DataFabricRecordId"] = Get(r, "DataFabricRecordId")
-                })
-                .Where(r => r.Values.Any(v => !string.IsNullOrWhiteSpace(v)))
-                .ToList();
+            var reportRows = findings.Select(ToReportRow).ToList();
+            var sourceDocuments = SourceDocumentRows(findings);
 
             using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
             AddText(archive, "[Content_Types].xml", ContentTypesXml());
@@ -183,10 +174,9 @@ namespace ExportContractFindings
             AddText(archive, "xl/workbook.xml", WorkbookXml());
             AddText(archive, "xl/_rels/workbook.xml.rels", WorkbookRelationshipsXml());
             AddText(archive, "xl/styles.xml", StylesXml());
-            AddText(archive, "xl/worksheets/sheet1.xml", SheetXml("Summary", SummaryRows(summary, findings)));
-            AddText(archive, "xl/worksheets/sheet2.xml", SheetXml("Findings", findings));
-            AddText(archive, "xl/worksheets/sheet3.xml", SheetXml("Exceptions", exceptions));
-            AddText(archive, "xl/worksheets/sheet4.xml", SheetXml("SourceRecords", sourceRecords));
+            AddText(archive, "xl/worksheets/sheet1.xml", SheetXml("Review Summary", SummaryRows(summary, reportRows)));
+            AddText(archive, "xl/worksheets/sheet2.xml", SheetXml("Findings", reportRows));
+            AddText(archive, "xl/worksheets/sheet3.xml", SheetXml("Source Documents", sourceDocuments));
         }
 
         private static IReadOnlyList<Dictionary<string, string>> SummaryRows(
@@ -195,18 +185,106 @@ namespace ExportContractFindings
         {
             var rows = new List<Dictionary<string, string>>
             {
-                new() { ["Metric"] = "GeneratedUtc", ["Value"] = DateTime.UtcNow.ToString("o") },
-                new() { ["Metric"] = "TotalFindings", ["Value"] = findings.Count.ToString() },
-                new() { ["Metric"] = "FlagCount", ["Value"] = findings.Count(r => Get(r, "Result").Equals("FLAG", StringComparison.OrdinalIgnoreCase)).ToString() },
-                new() { ["Metric"] = "ReviewCount", ["Value"] = findings.Count(r => Get(r, "Result").Equals("REVIEW", StringComparison.OrdinalIgnoreCase)).ToString() }
+                new() { ["Item"] = "Report Created", ["Details"] = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss 'UTC'") },
+                new() { ["Item"] = "Overall Result", ["Details"] = FirstNonEmpty(Get(summary, "overall_result"), HighestResult(findings)) },
+                new() { ["Item"] = "Total Findings", ["Details"] = findings.Count.ToString() },
+                new() { ["Item"] = "Flagged Items", ["Details"] = findings.Count(r => Get(r, "Result").Equals("FLAG", StringComparison.OrdinalIgnoreCase)).ToString() },
+                new() { ["Item"] = "Items Needing Review", ["Details"] = findings.Count(r => Get(r, "Result").Equals("REVIEW", StringComparison.OrdinalIgnoreCase)).ToString() },
+                new() { ["Item"] = "Data Source", ["Details"] = FriendlyDataSource(FirstNonEmpty(Get(summary, "data_source_mode"), "IDP_JSON_PRIMARY")) },
+                new() { ["Item"] = "Data Fabric Used", ["Details"] = FriendlyBoolean(Get(summary, "data_fabric_source_used")) },
+                new() { ["Item"] = "Review Batch", ["Details"] = Get(summary, "contract_batch_id") }
             };
 
-            foreach (var item in summary.OrderBy(k => k.Key))
+            return rows;
+        }
+
+        private static Dictionary<string, string> ToReportRow(IReadOnlyDictionary<string, string> row)
+        {
+            var checkId = FirstNonEmpty(Get(row, "Check"), Get(row, "CheckId"));
+            var checkName = FirstNonEmpty(Get(row, "CheckName"), Get(row, "Review Item"));
+            var check = string.IsNullOrWhiteSpace(checkId)
+                ? checkName
+                : string.IsNullOrWhiteSpace(checkName)
+                    ? checkId
+                    : $"{checkId} - {checkName}";
+
+            return new Dictionary<string, string>
             {
-                rows.Add(new Dictionary<string, string> { ["Metric"] = item.Key, ["Value"] = item.Value });
+                ["Check"] = check,
+                ["Result"] = Get(row, "Result"),
+                ["Priority"] = FirstNonEmpty(Get(row, "Priority"), Get(row, "Severity")),
+                ["Documents Reviewed"] = FirstNonEmpty(Get(row, "Documents Reviewed"), Get(row, "SourceFileName")),
+                ["Field Reviewed"] = FirstNonEmpty(Get(row, "Field Reviewed"), Get(row, "FieldName")),
+                ["Values Compared"] = FirstNonEmpty(Get(row, "Values Compared"), Get(row, "ComparedValues"), CombinedValues(row)),
+                ["What We Found"] = FirstNonEmpty(Get(row, "What We Found"), Get(row, "Evidence")),
+                ["Issue"] = FirstNonEmpty(Get(row, "Issue"), Get(row, "Exception")),
+                ["Recommended Action"] = FirstNonEmpty(Get(row, "Recommended Action"), Get(row, "RecommendedAction")),
+                ["Data Source"] = FriendlyDataSource(FirstNonEmpty(Get(row, "Data Source"), Get(row, "DataSource"), Get(row, "DataSourceMode"), "IDP_JSON_PRIMARY"))
+            };
+        }
+
+        private static IReadOnlyList<Dictionary<string, string>> SourceDocumentRows(IReadOnlyList<Dictionary<string, string>> findings)
+        {
+            var rows = new List<Dictionary<string, string>>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var finding in findings)
+            {
+                var files = SplitList(FirstNonEmpty(Get(finding, "SourceFileName"), Get(finding, "Documents Reviewed")));
+                var types = SplitList(FirstNonEmpty(Get(finding, "DocumentType"), Get(finding, "Document Type")));
+                if (files.Count == 0 && types.Count == 0)
+                {
+                    continue;
+                }
+
+                var count = Math.Max(files.Count, types.Count);
+                for (var i = 0; i < count; i++)
+                {
+                    var file = i < files.Count ? files[i] : "";
+                    var type = i < types.Count ? types[i] : FirstNonEmpty(Get(finding, "DocumentType"), Get(finding, "Document Type"), InferDocumentType(file));
+                    var key = $"{type}|{file}";
+                    if (!seen.Add(key))
+                    {
+                        continue;
+                    }
+
+                    rows.Add(new Dictionary<string, string>
+                    {
+                        ["Document Type"] = type,
+                        ["File Name"] = file,
+                        ["Used In Check"] = FirstNonEmpty(Get(finding, "CheckId"), Get(finding, "Check"), Get(finding, "CheckName")),
+                        ["Notes"] = FirstNonEmpty(Get(finding, "Issue"), Get(finding, "Exception"), Get(finding, "Evidence"))
+                    });
+                }
             }
 
             return rows;
+        }
+
+        private static string InferDocumentType(string fileName)
+        {
+            var name = (fileName ?? "").ToUpperInvariant();
+            if (name.Contains("DD2579", StringComparison.Ordinal))
+            {
+                return "DD2579";
+            }
+
+            if (name.Contains("SF1449", StringComparison.Ordinal))
+            {
+                return "SF1449";
+            }
+
+            if (name.Contains("SAAD", StringComparison.Ordinal))
+            {
+                return "SAAD";
+            }
+
+            if (name.Contains("DF", StringComparison.Ordinal) || name.Contains("D&F", StringComparison.Ordinal))
+            {
+                return "D&F";
+            }
+
+            return "";
         }
 
         private static string SheetXml(string sheetName, IReadOnlyList<Dictionary<string, string>> rows)
@@ -250,6 +328,80 @@ namespace ExportContractFindings
         private static string Get(IReadOnlyDictionary<string, string> row, string key) =>
             row.TryGetValue(key, out var value) ? value ?? "" : "";
 
+        private static string FirstNonEmpty(params string[] values) =>
+            values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v)) ?? "";
+
+        private static string CombinedValues(IReadOnlyDictionary<string, string> row)
+        {
+            var values = new[]
+            {
+                ("DD2579", Get(row, "DD2579Value")),
+                ("SF1449", Get(row, "SF1449Value")),
+                ("SAAD", Get(row, "SAADValue")),
+                ("D&F", Get(row, "DFTRValue"))
+            }
+            .Where(v => !string.IsNullOrWhiteSpace(v.Item2))
+            .Select(v => $"{v.Item1}: {v.Item2}");
+
+            return string.Join(" | ", values);
+        }
+
+        private static List<string> SplitList(string value) =>
+            (value ?? "")
+                .Split(new[] { ';', '|', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(v => v.Trim())
+                .Where(v => !string.IsNullOrWhiteSpace(v))
+                .ToList();
+
+        private static string FriendlyDataSource(string value)
+        {
+            var normalized = (value ?? "").Trim();
+            return normalized.ToUpperInvariant() switch
+            {
+                "IDP_JSON_PRIMARY" => "IDP extraction JSON",
+                "DATA_FABRIC_FALLBACK" => "Data Fabric fallback",
+                "MIXED_JSON_AND_DATA_FABRIC" => "IDP extraction JSON and Data Fabric",
+                _ => normalized
+            };
+        }
+
+        private static string FriendlyBoolean(string value)
+        {
+            if (value.Equals("TRUE", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Yes";
+            }
+
+            if (value.Equals("FALSE", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("false", StringComparison.OrdinalIgnoreCase))
+            {
+                return "No";
+            }
+
+            return value;
+        }
+
+        private static string HighestResult(IReadOnlyList<Dictionary<string, string>> findings)
+        {
+            if (findings.Any(r => Get(r, "Result").Equals("FLAG", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "FLAG";
+            }
+
+            if (findings.Any(r => Get(r, "Result").Equals("REVIEW", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "REVIEW";
+            }
+
+            if (findings.Any(r => Get(r, "Result").Equals("PASS", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "PASS";
+            }
+
+            return findings.Any() ? "N/A" : "";
+        }
+
         private static string ColumnName(int index)
         {
             var name = "";
@@ -289,7 +441,6 @@ namespace ExportContractFindings
             "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
             "<Override PartName=\"/xl/worksheets/sheet2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
             "<Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
-            "<Override PartName=\"/xl/worksheets/sheet4.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
             "</Types>";
 
         private static string RootRelationshipsXml() =>
@@ -302,10 +453,9 @@ namespace ExportContractFindings
             "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
             "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
             "<sheets>" +
-            "<sheet name=\"Summary\" sheetId=\"1\" r:id=\"rId1\"/>" +
+            "<sheet name=\"Review Summary\" sheetId=\"1\" r:id=\"rId1\"/>" +
             "<sheet name=\"Findings\" sheetId=\"2\" r:id=\"rId2\"/>" +
-            "<sheet name=\"Exceptions\" sheetId=\"3\" r:id=\"rId3\"/>" +
-            "<sheet name=\"SourceRecords\" sheetId=\"4\" r:id=\"rId4\"/>" +
+            "<sheet name=\"Source Documents\" sheetId=\"3\" r:id=\"rId3\"/>" +
             "</sheets></workbook>";
 
         private static string WorkbookRelationshipsXml() =>
@@ -314,7 +464,6 @@ namespace ExportContractFindings
             "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>" +
             "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet2.xml\"/>" +
             "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet3.xml\"/>" +
-            "<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet4.xml\"/>" +
             "<Relationship Id=\"rId5\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>" +
             "</Relationships>";
 

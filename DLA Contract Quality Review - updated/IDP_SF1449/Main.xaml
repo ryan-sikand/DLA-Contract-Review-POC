@@ -15,6 +15,8 @@
  xmlns:upr="clr-namespace:UiPath.Platform.ResourceHandling;assembly=UiPath.Platform"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <x:Members>
+    <x:Property Name="in_Sf1449DocumentPath1" Type="InArgument(x:String)" />
+    <x:Property Name="in_Sf1449DocumentPath2" Type="InArgument(x:String)" />
     <x:Property Name="out_ContractDataJson" Type="OutArgument(x:String)" />
   </x:Members>
   <TextExpression.NamespacesForImplementation>
@@ -106,8 +108,16 @@
         <InArgument x:TypeArguments="x:String">["DLA-CQR-" &amp; Now.ToString("yyyyMMddHHmmss")]</InArgument>
       </Assign.Value>
     </Assign>
+    <Assign DisplayName="Initialize SF1449 workflow output" sap2010:WorkflowViewState.IdRef="Assign_SF1449_InitializeOutput">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[out_ContractDataJson]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentType", "SF1449"}, {"processingState", "NoDocumentsSelected"}, {"documents", New Newtonsoft.Json.Linq.JArray()}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
+      </Assign.Value>
+    </Assign>
     <ucas:ListStorageFiles TimeoutMS="{x:Null}" Directory="\" DisplayName="Retrieve sample files" Filter="SF1449*.pdf" FolderPath="ryan.sikand@uipath.com's workspace" sap2010:WorkflowViewState.IdRef="ListStorageFiles_1" Recursive="True" Result="[sampleFiles]" StorageBucketName="DLA_Contract_Docs" />
-    <ui:ForEach x:TypeArguments="ucas:StorageFileInfo" CurrentIndex="{x:Null}" DisplayName="For each sample file" sap2010:WorkflowViewState.IdRef="ForEach`1_1" Values="[sampleFiles]">
+    <ui:ForEach x:TypeArguments="ucas:StorageFileInfo" CurrentIndex="{x:Null}" DisplayName="Process selected SF1449 documents" sap2010:WorkflowViewState.IdRef="ForEach`1_1" Values="[sampleFiles.Where(Function(f) (Not String.IsNullOrWhiteSpace(in_Sf1449DocumentPath1) AndAlso (f.FileFullPath.Equals(in_Sf1449DocumentPath1, StringComparison.OrdinalIgnoreCase) OrElse f.FileFullPath.EndsWith(in_Sf1449DocumentPath1, StringComparison.OrdinalIgnoreCase))) OrElse (Not String.IsNullOrWhiteSpace(in_Sf1449DocumentPath2) AndAlso (f.FileFullPath.Equals(in_Sf1449DocumentPath2, StringComparison.OrdinalIgnoreCase) OrElse f.FileFullPath.EndsWith(in_Sf1449DocumentPath2, StringComparison.OrdinalIgnoreCase)))).Take(2)]">
       <ui:ForEach.Body>
         <ActivityAction x:TypeArguments="ucas:StorageFileInfo">
           <ActivityAction.Argument>
