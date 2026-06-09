@@ -57,8 +57,8 @@
             <uipath:input name="name" type="string" value="=bindings.bDD2579Name" />
             <uipath:input name="folderPath" type="string" value="=bindings.bDD2579FolderPath" />
             <uipath:input name="_label" type="string" value="IDP_DD2579" />
-            <uipath:input name="in_DdDocumentPath" type="string" value="=vars.dd2579DocumentPath" />
           </uipath:context>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"in_DdDocumentPath":"=vars.dd2579DocumentPath"}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorDD2579" />
           <uipath:output name="out_ContractDataJson" type="string" source="=out_ContractDataJson" var="dd2579ContractDataJson" />
         </uipath:activity>
@@ -74,9 +74,8 @@
             <uipath:input name="name" type="string" value="=bindings.bSF1449Name" />
             <uipath:input name="folderPath" type="string" value="=bindings.bSF1449FolderPath" />
             <uipath:input name="_label" type="string" value="IDP_SF1449" />
-            <uipath:input name="in_Sf1449DocumentPath1" type="string" value="=vars.sf1449DocumentPath1" />
-            <uipath:input name="in_Sf1449DocumentPath2" type="string" value="=vars.sf1449DocumentPath2" />
           </uipath:context>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"in_Sf1449DocumentPath1":"=vars.sf1449DocumentPath1","in_Sf1449DocumentPath2":"=vars.sf1449DocumentPath2"}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorSF1449" />
           <uipath:output name="out_ContractDataJson" type="string" source="=out_ContractDataJson" var="sf1449ContractDataJson" />
         </uipath:activity>
@@ -92,8 +91,8 @@
             <uipath:input name="name" type="string" value="=bindings.bSAADName" />
             <uipath:input name="folderPath" type="string" value="=bindings.bSAADFolderPath" />
             <uipath:input name="_label" type="string" value="IDP_SAAD" />
-            <uipath:input name="in_SaadDocumentPath" type="string" value="=vars.saadDocumentPath" />
           </uipath:context>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"in_SaadDocumentPath":"=vars.saadDocumentPath"}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorSAAD" />
           <uipath:output name="out_ContractDataJson" type="string" source="=out_ContractDataJson" var="saadContractDataJson" />
         </uipath:activity>
@@ -109,8 +108,8 @@
             <uipath:input name="name" type="string" value="=bindings.bDFTRName" />
             <uipath:input name="folderPath" type="string" value="=bindings.bDFTRFolderPath" />
             <uipath:input name="_label" type="string" value="IDP_DF_TR" />
-            <uipath:input name="in_DftrDocumentPath" type="string" value="=vars.dftrDocumentPath" />
           </uipath:context>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"in_DftrDocumentPath":"=vars.dftrDocumentPath"}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorDFTR" />
           <uipath:output name="out_ContractDataJson" type="string" source="=out_ContractDataJson" var="dftrContractDataJson" />
         </uipath:activity>
@@ -250,7 +249,7 @@ return {
             <uipath:input name="folderPath" type="string" value="=bindings.bAgentFolderPath" />
             <uipath:input name="_label" type="string" value="Contract Validation Agent" />
           </uipath:context>
-          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"contractDataJson":{"payload":"=js:'DLA_JSON_PAYLOAD:' + (vars.contractDataJson || '{}')"}}]]></uipath:input>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"contractDataJson":{"payload":"=js:'DLA_JSON_PAYLOAD:' + JSON.stringify({contractBatchId:((JSON.parse(vars.dd2579ContractDataJson||'{}').contractBatchId)||''),source:'Maestro',dataFabric:{entityName:'DLADataService',entityId:'73b82488-f560-f111-8fcb-002248a16d28',sourceOfTruth:true},threeWayMatch:{primaryDocumentType:'DD2579',dd2579DocumentPath:vars.dd2579DocumentPath,sf1449DocumentPath1:vars.sf1449DocumentPath1,sf1449DocumentPath2:vars.sf1449DocumentPath2,saadDocumentPath:vars.saadDocumentPath,dftrDocumentPath:vars.dftrDocumentPath,comparisonDocumentTypes:['SF1449','SAAD','DF_TR']},documents:[].concat((JSON.parse(vars.dd2579ContractDataJson||'{}').documents)||[]).concat((JSON.parse(vars.sf1449ContractDataJson||'{}').documents)||[]).concat((JSON.parse(vars.saadContractDataJson||'{}').documents)||[]).concat((JSON.parse(vars.dftrContractDataJson||'{}').documents)||[])})"}}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorAgent" />
           <uipath:output name="content" type="string" source="=content" var="content" />
           <uipath:output name="excelReportRowsJson" type="string" source="=excelReportRowsJson" var="excelReportRowsJson" />

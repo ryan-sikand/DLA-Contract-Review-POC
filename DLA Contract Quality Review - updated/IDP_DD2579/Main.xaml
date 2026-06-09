@@ -115,7 +115,7 @@
       </Assign.Value>
     </Assign>
     <ucas:ListStorageFiles TimeoutMS="{x:Null}" Directory="\" DisplayName="Retrieve sample files" Filter="DD2579*.pdf" FolderPath="ryan.sikand@uipath.com's workspace" sap2010:WorkflowViewState.IdRef="ListStorageFiles_1" Recursive="True" Result="[sampleFiles]" StorageBucketName="DLA_Contract_Docs" />
-    <ui:ForEach x:TypeArguments="ucas:StorageFileInfo" CurrentIndex="{x:Null}" DisplayName="Process single DD2579 document" sap2010:WorkflowViewState.IdRef="ForEach`1_1" Values="[sampleFiles.Where(Function(f) String.IsNullOrWhiteSpace(in_DdDocumentPath) OrElse f.FileFullPath.Equals(in_DdDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse f.FileFullPath.EndsWith(in_DdDocumentPath, StringComparison.OrdinalIgnoreCase)).Take(1)]">
+    <ui:ForEach x:TypeArguments="ucas:StorageFileInfo" CurrentIndex="{x:Null}" DisplayName="Process single DD2579 document" sap2010:WorkflowViewState.IdRef="ForEach`1_1" Values="[sampleFiles.Where(Function(f) String.IsNullOrWhiteSpace(in_DdDocumentPath) OrElse f.FileFullPath.Equals(in_DdDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse f.FileFullPath.EndsWith(in_DdDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse System.IO.Path.GetFileName(f.FileFullPath).Equals(in_DdDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse System.IO.Path.GetFileNameWithoutExtension(f.FileFullPath).Equals(in_DdDocumentPath, StringComparison.OrdinalIgnoreCase)).Take(1)]">
       <ui:ForEach.Body>
         <ActivityAction x:TypeArguments="ucas:StorageFileInfo">
           <ActivityAction.Argument>
