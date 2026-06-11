@@ -1,25 +1,11 @@
-<Activity mc:Ignorable="sap2010" x:Class="Main"
- xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
- xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
- xmlns:p="http://schemas.uipath.com/workflow/activities/intelligentocr"
- xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib"
- xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
- xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib"
- xmlns:ucas="clr-namespace:UiPath.Core.Activities.Storage;assembly=UiPath.System.Activities"
- xmlns:uda="clr-namespace:UiPath.DataService.Activities;assembly=UiPath.DataService.Activities.Core"
- xmlns:udam="clr-namespace:UiPath.DataService.Activities.Models;assembly=UiPath.DataService.Activities.Core"
- xmlns:ui="http://schemas.uipath.com/workflow/activities"
- xmlns:uisad="clr-namespace:UiPath.IntelligentOCR.StudioWeb.Activities.DataValidation;assembly=UiPath.IntelligentOCR.StudioWeb.Activities"
- xmlns:uisad1="clr-namespace:UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction;assembly=UiPath.IntelligentOCR.StudioWeb.Activities"
- xmlns:uisasedb="clr-namespace:UiPath.IntelligentOCR.StudioWeb.Activities.SWEntities.ExtendedExtractionResultsForDocumentData.DLAContractSAADSAADV11.Bundle;assembly=ExtendedExtractionRe.CustomEntitiesSAAD"
- xmlns:upr="clr-namespace:UiPath.Platform.ResourceHandling;assembly=UiPath.Platform"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Activity mc:Ignorable="sap sap2010" x:Class="Main" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:p="http://schemas.uipath.com/workflow/activities/intelligentocr" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ucas="clr-namespace:UiPath.Core.Activities.Storage;assembly=UiPath.System.Activities" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:uisad="clr-namespace:UiPath.IntelligentOCR.StudioWeb.Activities.DataValidation;assembly=UiPath.IntelligentOCR.StudioWeb.Activities" xmlns:uisad1="clr-namespace:UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction;assembly=UiPath.IntelligentOCR.StudioWeb.Activities" xmlns:upr="clr-namespace:UiPath.Platform.ResourceHandling;assembly=UiPath.Platform" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <x:Members>
     <x:Property Name="in_SaadDocumentPath" Type="InArgument(x:String)" />
     <x:Property Name="out_ContractDataJson" Type="OutArgument(x:String)" />
   </x:Members>
+  <sap2010:WorkflowViewState.IdRef>ActivityBuilder_1</sap2010:WorkflowViewState.IdRef>
   <TextExpression.NamespacesForImplementation>
-    <scg:List x:TypeArguments="x:String" Capacity="40">
+    <scg:List x:TypeArguments="x:String" Capacity="80">
       <x:String>UiPath.Core.Activities</x:String>
       <x:String>System</x:String>
       <x:String>System.Activities</x:String>
@@ -57,11 +43,13 @@
       <x:String>System.Linq</x:String>
       <x:String>System.Windows.Markup</x:String>
       <x:String>Microsoft.VisualBasic.CompilerServices</x:String>
-      <x:String>UiPath.IntelligentOCR.StudioWeb.Activities.SWEntities.ExtendedExtractionResultsForDocumentData.DLAContractSAADSAADV11.Bundle</x:String>
       <x:String>Newtonsoft.Json</x:String>
       <x:String>Newtonsoft.Json.Linq</x:String>
       <x:String>UiPath.DataService.Activities</x:String>
       <x:String>UiPath.DataService.Activities.Models</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>GlobalVariablesNamespace</x:String>
+      <x:String>GlobalConstantsNamespace</x:String>
     </scg:List>
   </TextExpression.NamespacesForImplementation>
   <TextExpression.ReferencesForImplementation>
@@ -87,45 +75,96 @@
       <AssemblyReference>System.ObjectModel</AssemblyReference>
       <AssemblyReference>UiPath.DataService.Activities.Core</AssemblyReference>
       <AssemblyReference>UiPath.DataService.Definition</AssemblyReference>
+      <AssemblyReference>IDP_SAAD.Core</AssemblyReference>
     </scg:List>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap2010:WorkflowViewState.IdRef="Sequence_2">
+  <Sequence sap:VirtualizedContainerService.HintSize="2677,981.6566666666666" sap2010:WorkflowViewState.IdRef="Sequence_2">
     <Sequence.Variables>
       <Variable x:TypeArguments="scg:IEnumerable(ucas:StorageFileInfo)" Name="sampleFiles" />
       <Variable x:TypeArguments="upr:ILocalResource" Name="downloadedFile" />
-      <Variable x:TypeArguments="uisad1:IDocumentData(uisasedb:DLAContractSAADSAADV11)" Name="sAADDocumentData" />
+      <Variable x:TypeArguments="uisad1:IDocumentData(uisad1:DictionaryData)" Name="sAADDocumentData" />
       <Variable x:TypeArguments="x:String" Name="contractBatchId" />
       <Variable x:TypeArguments="x:String" Name="contractDataJson" />
       <Variable x:TypeArguments="x:String" Name="contractDataItemsJson" />
+      <Variable x:TypeArguments="x:String" Name="saadDocumentText" />
+      <Variable x:TypeArguments="x:String" Name="saadExtractedSamDate" />
+      <Variable x:TypeArguments="x:String" Name="saadExtractedFieldsJson" />
+      <Variable x:TypeArguments="x:String" Name="saadSamCheckedDate" />
+      <Variable x:TypeArguments="x:String" Name="saadSamCheckedDateRaw" />
+      <Variable x:TypeArguments="x:String" Name="saadSamCheckedDateSource" />
     </Sequence.Variables>
-    <ui:ManualTrigger Result="{x:Null}" DisplayName="Manual Trigger" sap2010:WorkflowViewState.IdRef="ManualTrigger_1" />
-    <Assign DisplayName="Create contract review batch id" sap2010:WorkflowViewState.IdRef="Assign_SAAD_BatchId">
+    <sap:WorkflowViewStateService.ViewState>
+      <scg:Dictionary x:TypeArguments="x:String, x:Object">
+        <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+      </scg:Dictionary>
+    </sap:WorkflowViewStateService.ViewState>
+    <ui:ManualTrigger Result="{x:Null}" DisplayName="Manual Trigger" sap:VirtualizedContainerService.HintSize="510,68" sap2010:WorkflowViewState.IdRef="ManualTrigger_1">
+      <sap:WorkflowViewStateService.ViewState>
+        <scg:Dictionary x:TypeArguments="x:String, x:Object">
+          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+        </scg:Dictionary>
+      </sap:WorkflowViewStateService.ViewState>
+    </ui:ManualTrigger>
+    <Assign DisplayName="Create contract review batch id" sap:VirtualizedContainerService.HintSize="510,48" sap2010:WorkflowViewState.IdRef="Assign_SAAD_BatchId">
       <Assign.To>
         <OutArgument x:TypeArguments="x:String">[contractBatchId]</OutArgument>
       </Assign.To>
       <Assign.Value>
         <InArgument x:TypeArguments="x:String">["DLA-CQR-" &amp; Now.ToString("yyyyMMddHHmmss")]</InArgument>
       </Assign.Value>
+      <sap:WorkflowViewStateService.ViewState>
+        <scg:Dictionary x:TypeArguments="x:String, x:Object">
+          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+        </scg:Dictionary>
+      </sap:WorkflowViewStateService.ViewState>
     </Assign>
-    <Assign DisplayName="Initialize SAAD workflow output" sap2010:WorkflowViewState.IdRef="Assign_SAAD_InitializeOutput">
+    <Assign DisplayName="Initialize SAAD workflow output" sap:VirtualizedContainerService.HintSize="510,48" sap2010:WorkflowViewState.IdRef="Assign_SAAD_InitializeOutput">
       <Assign.To>
         <OutArgument x:TypeArguments="x:String">[out_ContractDataJson]</OutArgument>
       </Assign.To>
       <Assign.Value>
         <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentType", "SAAD"}, {"processingState", "NoDocumentsSelected"}, {"documents", New Newtonsoft.Json.Linq.JArray()}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
       </Assign.Value>
+      <sap:WorkflowViewStateService.ViewState>
+        <scg:Dictionary x:TypeArguments="x:String, x:Object">
+          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+        </scg:Dictionary>
+      </sap:WorkflowViewStateService.ViewState>
     </Assign>
-    <ucas:ListStorageFiles TimeoutMS="{x:Null}" Directory="\" DisplayName="Retrieve sample files" Filter="SAAD*.pdf" FolderPath="ryan.sikand@uipath.com's workspace" sap2010:WorkflowViewState.IdRef="ListStorageFiles_1" Recursive="True" Result="[sampleFiles]" StorageBucketName="DLA_Contract_Docs" />
-    <ui:ForEach x:TypeArguments="ucas:StorageFileInfo" CurrentIndex="{x:Null}" DisplayName="Process selected SAAD document" sap2010:WorkflowViewState.IdRef="ForEach`1_1" Values="[sampleFiles.Where(Function(f) Not String.IsNullOrWhiteSpace(in_SaadDocumentPath) AndAlso (f.FileFullPath.Equals(in_SaadDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse f.FileFullPath.EndsWith(in_SaadDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse System.IO.Path.GetFileName(f.FileFullPath).Equals(in_SaadDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse System.IO.Path.GetFileNameWithoutExtension(f.FileFullPath).Equals(in_SaadDocumentPath, StringComparison.OrdinalIgnoreCase))).Take(1)]">
+    <ucas:ListStorageFiles TimeoutMS="{x:Null}" Directory="\" DisplayName="Retrieve sample files" Filter="SAAD*.pdf" FolderPath="ryan.sikand@uipath.com's workspace" sap:VirtualizedContainerService.HintSize="510,48" sap2010:WorkflowViewState.IdRef="ListStorageFiles_1" Recursive="True" Result="[sampleFiles]" StorageBucketName="DLA_Contract_Docs">
+      <sap:WorkflowViewStateService.ViewState>
+        <scg:Dictionary x:TypeArguments="x:String, x:Object">
+          <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+        </scg:Dictionary>
+      </sap:WorkflowViewStateService.ViewState>
+    </ucas:ListStorageFiles>
+    <ui:ForEach x:TypeArguments="ucas:StorageFileInfo" CurrentIndex="{x:Null}" DisplayName="Process selected SAAD document" sap:VirtualizedContainerService.HintSize="510,672" sap2010:WorkflowViewState.IdRef="ForEach`1_1" Values="[sampleFiles.Where(Function(f) Not String.IsNullOrWhiteSpace(in_SaadDocumentPath) AndAlso (f.FileFullPath.Equals(in_SaadDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse f.FileFullPath.EndsWith(in_SaadDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse System.IO.Path.GetFileName(f.FileFullPath).Equals(in_SaadDocumentPath, StringComparison.OrdinalIgnoreCase) OrElse System.IO.Path.GetFileNameWithoutExtension(f.FileFullPath).Equals(in_SaadDocumentPath, StringComparison.OrdinalIgnoreCase))).Take(1)]">
       <ui:ForEach.Body>
         <ActivityAction x:TypeArguments="ucas:StorageFileInfo">
           <ActivityAction.Argument>
             <DelegateInArgument x:TypeArguments="ucas:StorageFileInfo" Name="sampleFile" />
           </ActivityAction.Argument>
-          <Sequence DisplayName="" sap2010:WorkflowViewState.IdRef="Sequence_3">
-            <ui:LogMessage DisplayName="Log file processing update" sap2010:WorkflowViewState.IdRef="LogMessage_1" Message="[string.Format(&quot;Processing file: {0}&quot;, sampleFile.FileFullPath)]" />
-            <ucas:DownloadStorageFile Destination="{x:Null}" TimeoutMS="{x:Null}" DisplayName="Download sample file" FolderPath="ryan.sikand@uipath.com's workspace" sap2010:WorkflowViewState.IdRef="DownloadStorageFile_1" Path="[sampleFile.FileFullPath]" Result="[downloadedFile]" StorageBucketName="DLA_Contract_Docs" />
-            <p:ExtractDocumentDataWithDocumentData x:TypeArguments="uisasedb:DLAContractSAADSAADV11" ActivityMajorVersion="{x:Null}" DocumentBounds="{x:Null}" DocumentObjectModel="{x:Null}" DocumentPath="{x:Null}" DocumentText="{x:Null}" ExtractorDocumentType="{x:Null}" ExtractorResult="{x:Null}" PersistenceId="{x:Null}" PredictionId="{x:Null}" RuntimeAssetPath="{x:Null}" RuntimeTenantUrl="{x:Null}" ApplyAutoValidation="False" DisplayName="Extract Document Data (SAAD)" DocType="b355a731-4760-f111-8fcb-6045bd8c4028_OneClickMl" ExtractionResults="[sAADDocumentData]" FileInput="[downloadedFile]" GenerateData="True" sap2010:WorkflowViewState.IdRef="ExtractDocumentDataWithDocumentData`1_1" ModernDocumentTypeId="e031673a-6b5b-f111-8fca-002248840ef1" ModernDocumentTypeName="SAAD" ProjectId="48672468-695b-f111-8fcb-000d3abf8ee3" ProjectVersionName="DLA_Contract_SAAD" ProjectVersionNumber="11" TimeoutInSeconds="3600">
+          <Sequence DisplayName="Body" sap:VirtualizedContainerService.HintSize="510,600" sap2010:WorkflowViewState.IdRef="Sequence_3">
+            <sap:WorkflowViewStateService.ViewState>
+              <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+              </scg:Dictionary>
+            </sap:WorkflowViewStateService.ViewState>
+            <ui:LogMessage DisplayName="Log file processing update" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="LogMessage_1" Message="[string.Format(&quot;Processing file: {0}&quot;, sampleFile.FileFullPath)]">
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
+            </ui:LogMessage>
+            <ucas:DownloadStorageFile Destination="{x:Null}" TimeoutMS="{x:Null}" DisplayName="Download sample file" FolderPath="ryan.sikand@uipath.com's workspace" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="DownloadStorageFile_1" Path="[sampleFile.FileFullPath]" Result="[downloadedFile]" StorageBucketName="DLA_Contract_Docs">
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
+            </ucas:DownloadStorageFile>
+            <p:ExtractDocumentDataWithDocumentData x:TypeArguments="uisad1:DictionaryData" ActivityMajorVersion="2" DocumentBounds="{x:Null}" DocumentObjectModel="{x:Null}" DocumentPath="{x:Null}" ExtractorDocumentType="{x:Null}" ExtractorResult="{x:Null}" PersistenceId="{x:Null}" PredictionId="{x:Null}" RuntimeAssetPath="{x:Null}" RuntimeTenantUrl="{x:Null}" ApplyAutoValidation="False" DisplayName="Extract Document Data (SAAD)" DocType="a81fe4d6-f264-f111-8fcb-6045bd8c4028_OneClickMl" DocumentText="[saadDocumentText]" ExtractionResults="[sAADDocumentData]" FileInput="[downloadedFile]" GenerateData="False" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="ExtractDocumentDataWithDocumentData`1_1" ModernDocumentTypeId="e031673a-6b5b-f111-8fca-002248840ef1" ModernDocumentTypeName="SAAD" ProjectId="48672468-695b-f111-8fcb-000d3abf8ee3" ProjectVersionName="DLA_Contract_SAAD_v2" ProjectVersionNumber="14" TimeoutInSeconds="3600">
               <p:ExtractDocumentDataWithDocumentData.AutoValidationConfidenceThreshold>
                 <InArgument x:TypeArguments="s:Nullable(x:Int32)">
                   <Literal x:TypeArguments="s:Nullable(x:Int32)" Value="0" />
@@ -139,46 +178,120 @@
                   <Literal x:TypeArguments="x:String" Value="" />
                 </InArgument>
               </p:ExtractDocumentDataWithDocumentData.ProjectTag>
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
             </p:ExtractDocumentDataWithDocumentData>
-            <ui:CommentOut DisplayName="Disabled activities" sap2010:WorkflowViewState.IdRef="CommentOut_SAAD_Validation">
+            <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Read SAAD SAM date from extracted fields" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_SAAD_ReadFields" UnSafe="False" WorkflowFileName="GetSaadSamDateFromDictionary.cs">
+              <ui:InvokeWorkflowFile.Arguments>
+                <scg:Dictionary x:TypeArguments="x:String, Argument">
+                  <InArgument x:TypeArguments="x:Object" x:Key="in_DocumentData">[sAADDocumentData]</InArgument>
+                  <OutArgument x:TypeArguments="x:String" x:Key="saadExtractedSamDate">[saadExtractedSamDate]</OutArgument>
+                  <OutArgument x:TypeArguments="x:String" x:Key="saadExtractedFieldsJson">[saadExtractedFieldsJson]</OutArgument>
+                </scg:Dictionary>
+              </ui:InvokeWorkflowFile.Arguments>
+            </ui:InvokeWorkflowFile>
+            <ui:LogMessage DisplayName="Log SAAD extracted field debug" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="LogMessage_SAAD_FieldDebug" Message="[&quot;SAAD DU field debug: selectedDate='&quot; &amp; If(String.IsNullOrWhiteSpace(saadExtractedSamDate), &quot;&quot;, saadExtractedSamDate) &amp; &quot;' documentTextLength=&quot; &amp; If(saadDocumentText Is Nothing, 0, saadDocumentText.Length).ToString() &amp; &quot; fields=&quot; &amp; If(String.IsNullOrWhiteSpace(saadExtractedFieldsJson), &quot;[]&quot;, If(saadExtractedFieldsJson.Length &gt; 3000, saadExtractedFieldsJson.Substring(0, 3000), saadExtractedFieldsJson))]">
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
+            </ui:LogMessage>
+            <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Normalize SAAD SAM checked date" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_SAAD_NormalizeDate" UnSafe="False" WorkflowFileName="NormalizeSaadSamDate.cs">
+              <ui:InvokeWorkflowFile.Arguments>
+                <scg:Dictionary x:TypeArguments="x:String, Argument">
+                  <InArgument x:TypeArguments="x:String" x:Key="in_ExtractedSamDate">[saadExtractedSamDate]</InArgument>
+                  <InArgument x:TypeArguments="x:String" x:Key="in_DocumentText">[saadDocumentText]</InArgument>
+                  <OutArgument x:TypeArguments="x:String" x:Key="saadSamCheckedDate">[saadSamCheckedDate]</OutArgument>
+                  <OutArgument x:TypeArguments="x:String" x:Key="saadSamCheckedDateRaw">[saadSamCheckedDateRaw]</OutArgument>
+                  <OutArgument x:TypeArguments="x:String" x:Key="saadSamCheckedDateSource">[saadSamCheckedDateSource]</OutArgument>
+                </scg:Dictionary>
+              </ui:InvokeWorkflowFile.Arguments>
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
+            </ui:InvokeWorkflowFile>
+            <ui:CommentOut DisplayName="Disabled activities" sap:VirtualizedContainerService.HintSize="480,168" sap2010:WorkflowViewState.IdRef="CommentOut_SAAD_Validation">
               <ui:CommentOut.Body>
-                <Sequence DisplayName="Ignored Activities" sap2010:WorkflowViewState.IdRef="Sequence_SAAD_DisabledValidation">
-                  <uisad:ValidateDocumentDataWithDocumentData x:TypeArguments="uisasedb:DLAContractSAADSAADV11" FieldsValidationConfidence="{x:Null}" OperationId="{x:Null}" OrganizationId="{x:Null}" TenantId="{x:Null}" WaitItemDataObject="{x:Null}" ActionCatalogue="default_du_actions" ActionPriority="Medium" ActionTitle="Validate Extraction Results" AutomaticExtractionResults="[sAADDocumentData]" DisplayMode="Compact" DisplayName="Validate SAAD extraction" EnableRTLControls="False" sap2010:WorkflowViewState.IdRef="ValidateDocumentDataWithDocumentData`1_1" OrchestratorBucketName="DLA_Contract_Docs" OrchestratorFolderName="ryan.sikand@uipath.com's workspace" ValidatedExtractionResults="[sAADDocumentData]" />
+                <Sequence DisplayName="Ignored Activities" sap:VirtualizedContainerService.HintSize="480,96" sap2010:WorkflowViewState.IdRef="Sequence_SAAD_DisabledValidation">
+                  <sap:WorkflowViewStateService.ViewState>
+                    <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                      <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+                    </scg:Dictionary>
+                  </sap:WorkflowViewStateService.ViewState>
+                  <uisad:ValidateDocumentDataWithDocumentData x:TypeArguments="uisad1:DictionaryData" FieldsValidationConfidence="{x:Null}" OperationId="{x:Null}" OrganizationId="{x:Null}" TenantId="{x:Null}" WaitItemDataObject="{x:Null}" ActionCatalogue="default_du_actions" ActionPriority="Medium" ActionTitle="Validate Extraction Results" AutomaticExtractionResults="[sAADDocumentData]" DisplayMode="Compact" DisplayName="Validate SAAD extraction" EnableRTLControls="False" sap:VirtualizedContainerService.HintSize="450,48" sap2010:WorkflowViewState.IdRef="ValidateDocumentDataWithDocumentData`1_1" OrchestratorBucketName="DLA_Contract_Docs" OrchestratorFolderName="ryan.sikand@uipath.com's workspace" ValidatedExtractionResults="[sAADDocumentData]">
+                    <sap:WorkflowViewStateService.ViewState>
+                      <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                        <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                      </scg:Dictionary>
+                    </sap:WorkflowViewStateService.ViewState>
+                  </uisad:ValidateDocumentDataWithDocumentData>
                 </Sequence>
               </ui:CommentOut.Body>
             </ui:CommentOut>
-            <Assign DisplayName="Build SAAD agent input JSON" sap2010:WorkflowViewState.IdRef="Assign_SAAD_Json">
+            <Assign DisplayName="Build SAAD agent input JSON" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="Assign_SAAD_Json">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[contractDataJson]</OutArgument>
               </Assign.To>
               <Assign.Value>
-                <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentRecordKey", contractBatchId &amp; "|SAAD|" &amp; sampleFile.FileFullPath}, {"documentType", "SAAD"}, {"sourceFilePath", sampleFile.FileFullPath}, {"sourceFileName", downloadedFile.GetName()}, {"extractionProjectName", "DLA_Contract_SAAD"}, {"extractionProjectVersion", "11"}, {"validationState", "NotValidated"}, {"processingState", "Extracted"}, {"saadSamCheckedDate", If(sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked Is Nothing OrElse sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked.Value Is Nothing, "", sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked.Value.ToString())}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
+                <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentRecordKey", contractBatchId &amp; "|SAAD|" &amp; sampleFile.FileFullPath}, {"documentType", "SAAD"}, {"sourceFilePath", sampleFile.FileFullPath}, {"sourceFileName", downloadedFile.GetName()}, {"extractionProjectName", "DLA_Contract_SAAD_v2"}, {"extractionProjectVersion", "14"}, {"validationState", "NotValidated"}, {"processingState", "Extracted"}, {"saadSamCheckedDate", If(String.IsNullOrWhiteSpace(saadSamCheckedDate), "", saadSamCheckedDate)}, {"saadSamCheckedDateRaw", If(String.IsNullOrWhiteSpace(saadSamCheckedDateRaw), "", saadSamCheckedDateRaw)}, {"saadSamCheckedDateSource", If(String.IsNullOrWhiteSpace(saadSamCheckedDateSource), "NOT_FOUND", saadSamCheckedDateSource)}, {"saadDuFieldDebugJson", If(String.IsNullOrWhiteSpace(saadExtractedFieldsJson), "[]", saadExtractedFieldsJson)}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
               </Assign.Value>
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
             </Assign>
-            <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="{x:Null}" DisplayName="Persist DLA Data Service record" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_SAAD_DataService" UnSafe="False" WorkflowFileName="PersistDlaDataServiceRecord.cs">
+            <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" DisplayName="Persist DLA Data Service record" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="InvokeWorkflowFile_SAAD_DataService" UnSafe="False" WorkflowFileName="PersistDlaDataServiceRecord.cs">
               <ui:InvokeWorkflowFile.Arguments>
                 <scg:Dictionary x:TypeArguments="x:String, Argument">
                   <InArgument x:TypeArguments="x:String" x:Key="in_RecordJson">[contractDataJson]</InArgument>
                 </scg:Dictionary>
               </ui:InvokeWorkflowFile.Arguments>
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
             </ui:InvokeWorkflowFile>
-            <Assign DisplayName="Append SAAD file JSON to workflow output" sap2010:WorkflowViewState.IdRef="Assign_SAAD_AppendOutput">
+            <Assign DisplayName="Append SAAD file JSON to workflow output" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="Assign_SAAD_AppendOutput">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[contractDataItemsJson]</OutArgument>
               </Assign.To>
               <Assign.Value>
                 <InArgument x:TypeArguments="x:String">[If(String.IsNullOrWhiteSpace(contractDataItemsJson), contractDataJson, contractDataItemsJson &amp; "," &amp; contractDataJson)]</InArgument>
               </Assign.Value>
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
             </Assign>
-            <Assign DisplayName="Set SAAD workflow output" sap2010:WorkflowViewState.IdRef="Assign_SAAD_Output">
+            <Assign DisplayName="Set SAAD workflow output" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="Assign_SAAD_Output">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[out_ContractDataJson]</OutArgument>
               </Assign.To>
               <Assign.Value>
                 <InArgument x:TypeArguments="x:String">[JObject.FromObject(New Dictionary(Of String, Object) From {{"contractBatchId", contractBatchId}, {"documentType", "SAAD"}, {"processingState", "Extracted"}, {"documents", Newtonsoft.Json.Linq.JArray.Parse("[" &amp; If(String.IsNullOrWhiteSpace(contractDataItemsJson), "", contractDataItemsJson) &amp; "]")}}).ToString(Newtonsoft.Json.Formatting.None)]</InArgument>
               </Assign.Value>
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
             </Assign>
-            <ui:LogMessage DisplayName="Log Message" sap2010:WorkflowViewState.IdRef="LogMessage_2" Message="[&quot;File: &quot; &amp; downloadedFile.GetName() &amp; &quot; | SAM Exclusion Search Date: &quot; &amp; sAADDocumentData.Data.HasAnActiveRegistrationInSAMDateSAMChecked.Value.ToString()]" />
+            <ui:LogMessage DisplayName="Log Message" sap:VirtualizedContainerService.HintSize="480,48" sap2010:WorkflowViewState.IdRef="LogMessage_2" Message="[&quot;File: &quot; &amp; downloadedFile.GetName() &amp; &quot; | SAM Exclusion Search Date: &quot; &amp; If(String.IsNullOrWhiteSpace(saadSamCheckedDate), &quot;&quot;, saadSamCheckedDate) &amp; &quot; | Source: &quot; &amp; If(String.IsNullOrWhiteSpace(saadSamCheckedDateSource), &quot;NOT_FOUND&quot;, saadSamCheckedDateSource)]">
+              <sap:WorkflowViewStateService.ViewState>
+                <scg:Dictionary x:TypeArguments="x:String, x:Object">
+                  <x:Boolean x:Key="IsExpanded">False</x:Boolean>
+                </scg:Dictionary>
+              </sap:WorkflowViewStateService.ViewState>
+            </ui:LogMessage>
           </Sequence>
         </ActivityAction>
       </ui:ForEach.Body>

@@ -1,11 +1,10 @@
 {
   "docVersion": "1.0.0",
   "resource": {
-    "name": "Export Contract Findings",
+    "name": "IDP_SAAD_v2",
     "kind": "package",
     "apiVersion": "orchestrator.uipath.com/v1",
-    "projectKey": "9c02f72a-5d38-48ed-a500-d5b2233f3fe5",
-    "isOverridable": true,
+    "projectKey": "95de3477-268f-48e4-81cc-d2030fb4cd71",
     "dependencies": [],
     "runtimeDependencies": [],
     "folders": [
@@ -14,10 +13,10 @@
       }
     ],
     "spec": {
-      "name": "Export Contract Findings"
+      "name": "IDP_SAAD_v2"
     },
     "locks": [],
-    "key": "ddc8e517-48c8-4be8-9425-89d7e952f2da",
+    "key": "2e233ac4-7af1-41a8-a696-dd48843a60f8",
     "files": []
   }
 }

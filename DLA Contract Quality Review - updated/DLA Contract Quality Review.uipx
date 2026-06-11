@@ -15,6 +15,11 @@
         },
         {
             "Type": "Process",
+            "ProjectRelativePath": "Export Contract Findings/project.uiproj",
+            "Id": "9c02f72a-5d38-48ed-a500-d5b2233f3fe5"
+        },
+        {
+            "Type": "Process",
             "ProjectRelativePath": "IDP_DD2579/project.uiproj",
             "Id": "aa96f717-3a23-4c3f-88d9-59d0126acaea"
         },
@@ -35,8 +40,8 @@
         },
         {
             "Type": "Process",
-            "ProjectRelativePath": "Export Contract Findings\\project.uiproj",
-            "Id": "9c02f72a-5d38-48ed-a500-d5b2233f3fe5"
+            "ProjectRelativePath": "IDP_SAAD_v2\\project.uiproj",
+            "Id": "95de3477-268f-48e4-81cc-d2030fb4cd71"
         }
     ]
 }
