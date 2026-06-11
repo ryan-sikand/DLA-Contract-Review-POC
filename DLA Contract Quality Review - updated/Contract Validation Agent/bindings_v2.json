@@ -1,4 +1,25 @@
 {
   "version": "2.0",
-  "resources": []
+  "resources": [
+    {
+      "resource": "index",
+      "key": "DLA_Contract_Agent_Index",
+      "value": {
+        "name": {
+          "defaultValue": "DLA_Contract_Agent_Index",
+          "isExpression": false,
+          "displayName": "Index Name"
+        },
+        "folderPath": {
+          "defaultValue": "AMER Presales/Public Sector/DLA Contract Quality Review POC",
+          "isExpression": false,
+          "displayName": "Folder path"
+        }
+      },
+      "metadata": {
+        "bindingsVersion": "2.2",
+        "solutionsSupport": "true"
+      }
+    }
+  ]
 }

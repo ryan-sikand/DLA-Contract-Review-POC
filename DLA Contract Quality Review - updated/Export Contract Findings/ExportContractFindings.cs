@@ -20,6 +20,26 @@ namespace ExportContractFindings
         private const string DefaultFolderPath = "AMER Presales/Public Sector/DLA Contract Quality Review POC";
         private const string DefaultSharePointFolderUrl = "https://uipath.sharepoint.com/sites/CustomerSuccess-Publicsector/Shared%20Documents/SE%20-%20PubSec/2.%20Demos/DLA%20Contract%20Quality%20Review";
         private const string DefaultOneDriveConnectionId = "27b43e53-db23-4b85-ab3d-4c8693756122";
+        private const int CustomerCellLimit = 260;
+        private static readonly string[] CustomerColumns =
+        {
+            "Check",
+            "Result",
+            "Agent Recommendation",
+            "Fields Reviewed",
+            "Values Compared",
+            "Issue",
+            "Recommended Action"
+        };
+
+        private static readonly string[] RequiredChecks =
+        {
+            "NAICS / PSC / Size Standard Match",
+            "NAICS / SBA Size Standard",
+            "Semantic Alignment",
+            "SAM Exclusion Search Date",
+            "D&F Requirement"
+        };
 
         [Workflow]
         public async Task<(string bucketFilePath, string sharePointUploadStatus, string localWorkbookPath)> Execute(
@@ -45,7 +65,7 @@ namespace ExportContractFindings
             var localWorkbookPath = Path.Combine(Path.GetTempPath(), fileName);
             var bucketPath = $"reports/{fileName}";
 
-            WriteWorkbook(localWorkbookPath, rows, content);
+            WriteWorkbook(localWorkbookPath, rows, content, agentContentJson);
 
             if (!system.PathExists(localWorkbookPath, out var fileResource))
             {
@@ -158,15 +178,18 @@ namespace ExportContractFindings
         private static void WriteWorkbook(
             string path,
             IReadOnlyList<Dictionary<string, string>> findings,
-            IReadOnlyDictionary<string, string> summary)
+            IReadOnlyDictionary<string, string> summary,
+            string agentContentJson)
         {
             if (File.Exists(path))
             {
                 File.Delete(path);
             }
 
-            var reportRows = findings.Select(ToReportRow).ToList();
-            var sourceDocuments = SourceDocumentRows(findings);
+            var reportRows = BuildCustomerRows(findings);
+            var sourceDocuments = SourceDocumentRows(findings, agentContentJson);
+            var technicalRows = TechnicalDetailRows(agentContentJson, findings, reportRows);
+            var customerGrid = CustomerSummaryGrid(summary, reportRows, sourceDocuments.Count);
 
             using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
             AddText(archive, "[Content_Types].xml", ContentTypesXml());
@@ -174,59 +197,140 @@ namespace ExportContractFindings
             AddText(archive, "xl/workbook.xml", WorkbookXml());
             AddText(archive, "xl/_rels/workbook.xml.rels", WorkbookRelationshipsXml());
             AddText(archive, "xl/styles.xml", StylesXml());
-            AddText(archive, "xl/worksheets/sheet1.xml", SheetXml("Review Summary", SummaryRows(summary, reportRows)));
-            AddText(archive, "xl/worksheets/sheet2.xml", SheetXml("Findings", reportRows));
+            AddText(archive, "xl/worksheets/sheet1.xml", SheetGridXml("Contract Quality Review Results", customerGrid));
+            AddText(archive, "xl/worksheets/sheet2.xml", SheetXml("Technical Details", technicalRows));
             AddText(archive, "xl/worksheets/sheet3.xml", SheetXml("Source Documents", sourceDocuments));
         }
 
-        private static IReadOnlyList<Dictionary<string, string>> SummaryRows(
+        private static IReadOnlyList<IReadOnlyList<string>> CustomerSummaryGrid(
             IReadOnlyDictionary<string, string> summary,
-            IReadOnlyList<Dictionary<string, string>> findings)
+            IReadOnlyList<Dictionary<string, string>> findings,
+            int sourceDocumentCount)
         {
-            var rows = new List<Dictionary<string, string>>
+            var passCount = findings.Count(r => Get(r, "Result").Equals("Pass", StringComparison.OrdinalIgnoreCase));
+            var flagCount = findings.Count(r => Get(r, "Result").Equals("Flag", StringComparison.OrdinalIgnoreCase));
+            var notApplicableCount = findings.Count(r => Get(r, "Result").Equals("Not Applicable", StringComparison.OrdinalIgnoreCase));
+            var overallStatus = FirstNonEmpty(Get(summary, "overall_status"), CustomerOverallStatus(findings));
+            var contractPackage = FirstNonEmpty(Get(summary, "contract_package"), Get(summary, "contract_batch_id"), Get(summary, "contractBatchId"), "Not specified");
+            var created = FirstNonEmpty(Get(summary, "created"), DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss 'UTC'"));
+            var documentsProcessed = FirstNonEmpty(Get(summary, "documents_processed"), sourceDocumentCount > 0 ? sourceDocumentCount.ToString() : "");
+            var fieldsReviewed = FirstNonEmpty(Get(summary, "fields_reviewed"), $"{CountReviewedFields(findings)} field groups");
+            var rulesEvaluated = FirstNonEmpty(Get(summary, "business_rules_evaluated"), findings.Count.ToString());
+            var resultSummary = FirstNonEmpty(Get(summary, "result_summary"), $"{passCount} Pass | {flagCount} Flag | {notApplicableCount} Not Applicable");
+
+            var rows = new List<IReadOnlyList<string>>
             {
-                new() { ["Item"] = "Report Created", ["Details"] = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss 'UTC'") },
-                new() { ["Item"] = "Overall Result", ["Details"] = FirstNonEmpty(Get(summary, "overall_result"), HighestResult(findings)) },
-                new() { ["Item"] = "Total Findings", ["Details"] = findings.Count.ToString() },
-                new() { ["Item"] = "Flagged Items", ["Details"] = findings.Count(r => Get(r, "Result").Equals("FLAG", StringComparison.OrdinalIgnoreCase)).ToString() },
-                new() { ["Item"] = "Items Needing Review", ["Details"] = findings.Count(r => Get(r, "Result").Equals("REVIEW", StringComparison.OrdinalIgnoreCase)).ToString() },
-                new() { ["Item"] = "Data Source", ["Details"] = FriendlyDataSource(FirstNonEmpty(Get(summary, "data_source_mode"), "IDP_JSON_PRIMARY")) },
-                new() { ["Item"] = "Data Fabric Used", ["Details"] = FriendlyBoolean(Get(summary, "data_fabric_source_used")) },
-                new() { ["Item"] = "Review Batch", ["Details"] = Get(summary, "contract_batch_id") }
+                new[] { "Contract Quality Review Results" },
+                Array.Empty<string>(),
+                new[] { "Overall Status", overallStatus },
+                new[] { "Contract Package", contractPackage },
+                new[] { "Created", created },
+                new[] { "Documents Processed", documentsProcessed },
+                new[] { "Fields Reviewed", fieldsReviewed },
+                new[] { "Business Rules Evaluated", rulesEvaluated },
+                new[] { "Result Summary", resultSummary },
+                Array.Empty<string>(),
+                new[] { "Business Rule Results" },
+                CustomerColumns
             };
+
+            rows.AddRange(findings.Select(row => CustomerColumns.Select(column => Get(row, column)).ToArray()));
+
+            var completenessNote = DataCompletenessNote(findings);
+            if (!string.IsNullOrWhiteSpace(completenessNote))
+            {
+                rows.Add(Array.Empty<string>());
+                rows.Add(new[] { "Data Completeness Notes" });
+                rows.Add(new[] { completenessNote });
+            }
 
             return rows;
         }
 
-        private static Dictionary<string, string> ToReportRow(IReadOnlyDictionary<string, string> row)
+        private static List<Dictionary<string, string>> BuildCustomerRows(IReadOnlyList<Dictionary<string, string>> findings)
         {
-            var checkId = FirstNonEmpty(Get(row, "Check"), Get(row, "CheckId"));
+            var candidates = findings.Select(ToCustomerCandidate)
+                .Where(row => !string.IsNullOrWhiteSpace(Get(row, "Check")))
+                .ToList();
+
+            var rows = new List<Dictionary<string, string>>();
+            foreach (var requiredCheck in RequiredChecks)
+            {
+                var matchingRows = candidates
+                    .Where(row => Get(row, "Check").Equals(requiredCheck, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                rows.Add(matchingRows.Count == 0
+                    ? MissingCheckRow(requiredCheck)
+                    : MergeCustomerRows(requiredCheck, matchingRows));
+            }
+
+            return rows;
+        }
+
+        private static Dictionary<string, string> ToCustomerCandidate(IReadOnlyDictionary<string, string> row)
+        {
+            var checkId = FirstNonEmpty(Get(row, "CheckId"), Get(row, "Check"));
             var checkName = FirstNonEmpty(Get(row, "CheckName"), Get(row, "Review Item"));
-            var check = string.IsNullOrWhiteSpace(checkId)
-                ? checkName
-                : string.IsNullOrWhiteSpace(checkName)
-                    ? checkId
-                    : $"{checkId} - {checkName}";
+            var check = MapCustomerCheck(FirstNonEmpty(Get(row, "Check"), checkName, checkId));
+            var result = NormalizeResult(Get(row, "Result"));
+            var issue = FirstNonEmpty(Get(row, "Issue"), Get(row, "Exception"), Get(row, "What We Found"), Get(row, "Evidence"));
+            var action = FirstNonEmpty(Get(row, "Recommended Action"), Get(row, "RecommendedAction"));
 
             return new Dictionary<string, string>
             {
                 ["Check"] = check,
-                ["Result"] = Get(row, "Result"),
-                ["Priority"] = FirstNonEmpty(Get(row, "Priority"), Get(row, "Severity")),
-                ["Documents Reviewed"] = FirstNonEmpty(Get(row, "Documents Reviewed"), Get(row, "SourceFileName")),
-                ["Field Reviewed"] = FirstNonEmpty(Get(row, "Field Reviewed"), Get(row, "FieldName")),
-                ["Values Compared"] = FirstNonEmpty(Get(row, "Values Compared"), Get(row, "ComparedValues"), CombinedValues(row)),
-                ["What We Found"] = FirstNonEmpty(Get(row, "What We Found"), Get(row, "Evidence")),
-                ["Issue"] = FirstNonEmpty(Get(row, "Issue"), Get(row, "Exception")),
-                ["Recommended Action"] = FirstNonEmpty(Get(row, "Recommended Action"), Get(row, "RecommendedAction")),
-                ["Data Source"] = FriendlyDataSource(FirstNonEmpty(Get(row, "Data Source"), Get(row, "DataSource"), Get(row, "DataSourceMode"), "IDP_JSON_PRIMARY"))
+                ["Result"] = result,
+                ["Agent Recommendation"] = NormalizeRecommendation(FirstNonEmpty(Get(row, "Agent Recommendation"), Get(row, "Recommendation")), result, issue),
+                ["Fields Reviewed"] = FirstNonEmpty(Get(row, "Fields Reviewed"), Get(row, "Field Reviewed"), Get(row, "FieldName"), DefaultFieldsReviewed(check)),
+                ["Values Compared"] = FirstNonEmpty(Get(row, "Values Compared"), Get(row, "ComparedValues"), CombinedValues(row), DefaultValuesCompared(check)),
+                ["Issue"] = NormalizeIssue(result, issue),
+                ["Recommended Action"] = NormalizeAction(result, action, check)
             };
         }
 
-        private static IReadOnlyList<Dictionary<string, string>> SourceDocumentRows(IReadOnlyList<Dictionary<string, string>> findings)
+        private static Dictionary<string, string> MergeCustomerRows(string check, IReadOnlyList<Dictionary<string, string>> rows)
+        {
+            var result = rows.Any(r => Get(r, "Result").Equals("Flag", StringComparison.OrdinalIgnoreCase))
+                ? "Flag"
+                : rows.Any(r => Get(r, "Result").Equals("Pass", StringComparison.OrdinalIgnoreCase))
+                    ? "Pass"
+                    : "Not Applicable";
+
+            var issue = result.Equals("Pass", StringComparison.OrdinalIgnoreCase)
+                ? "No issue identified"
+                : JoinDistinct(rows.Select(r => Get(r, "Issue")));
+
+            return new Dictionary<string, string>
+            {
+                ["Check"] = check,
+                ["Result"] = result,
+                ["Agent Recommendation"] = NormalizeRecommendation(JoinDistinct(rows.Select(r => Get(r, "Agent Recommendation"))), result, issue),
+                ["Fields Reviewed"] = CleanCustomerText(FirstNonEmpty(JoinDistinct(rows.Select(r => Get(r, "Fields Reviewed"))), DefaultFieldsReviewed(check))),
+                ["Values Compared"] = CleanCustomerText(FirstNonEmpty(JoinDistinct(rows.Select(r => Get(r, "Values Compared"))), DefaultValuesCompared(check))),
+                ["Issue"] = CleanCustomerText(NormalizeIssue(result, issue)),
+                ["Recommended Action"] = CleanCustomerText(NormalizeAction(result, JoinDistinct(rows.Select(r => Get(r, "Recommended Action"))), check))
+            };
+        }
+
+        private static Dictionary<string, string> MissingCheckRow(string check) =>
+            new()
+            {
+                ["Check"] = check,
+                ["Result"] = "Flag",
+                ["Agent Recommendation"] = "Missing evidence",
+                ["Fields Reviewed"] = DefaultFieldsReviewed(check),
+                ["Values Compared"] = DefaultValuesCompared(check),
+                ["Issue"] = "The agent did not return enough evidence to complete this check.",
+                ["Recommended Action"] = DefaultRecommendedAction(check)
+            };
+
+        private static IReadOnlyList<Dictionary<string, string>> SourceDocumentRows(IReadOnlyList<Dictionary<string, string>> findings, string agentContentJson)
         {
             var rows = new List<Dictionary<string, string>>();
             var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            AddSourceDocumentsFromContent(agentContentJson, rows, seen);
 
             foreach (var finding in findings)
             {
@@ -261,6 +365,166 @@ namespace ExportContractFindings
             return rows;
         }
 
+        private static void AddSourceDocumentsFromContent(string agentContentJson, List<Dictionary<string, string>> rows, HashSet<string> seen)
+        {
+            if (string.IsNullOrWhiteSpace(agentContentJson))
+            {
+                return;
+            }
+
+            try
+            {
+                using var document = JsonDocument.Parse(agentContentJson);
+                if (TryGetProperty(document.RootElement, "source_records", out var sourceRecords) && sourceRecords.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var record in sourceRecords.EnumerateArray())
+                    {
+                        AddSourceDocument(record, rows, seen);
+                    }
+                }
+
+                if (TryGetProperty(document.RootElement, "technical_detail", out var technicalDetail) &&
+                    TryGetProperty(technicalDetail, "source_records", out var technicalSourceRecords) &&
+                    technicalSourceRecords.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var record in technicalSourceRecords.EnumerateArray())
+                    {
+                        AddSourceDocument(record, rows, seen);
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                return;
+            }
+        }
+
+        private static void AddSourceDocument(JsonElement record, List<Dictionary<string, string>> rows, HashSet<string> seen)
+        {
+            if (record.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            var file = FirstNonEmpty(
+                GetJsonString(record, "sourceFileName"),
+                GetJsonString(record, "source_file_name"),
+                GetJsonString(record, "sourceFilePath"),
+                GetJsonString(record, "source_file_path"),
+                GetJsonString(record, "fileName"),
+                GetJsonString(record, "filename"));
+            var type = FirstNonEmpty(
+                GetJsonString(record, "documentType"),
+                GetJsonString(record, "document_type"),
+                InferDocumentType(file));
+            var key = $"{type}|{file}";
+            if (string.IsNullOrWhiteSpace(key) || !seen.Add(key))
+            {
+                return;
+            }
+
+            rows.Add(new Dictionary<string, string>
+            {
+                ["Document Type"] = type,
+                ["File Name"] = file,
+                ["Used In Check"] = "Technical evidence",
+                ["Notes"] = FirstNonEmpty(
+                    GetJsonString(record, "processingState"),
+                    GetJsonString(record, "validationState"),
+                    GetJsonString(record, "extractionProjectName"))
+            });
+        }
+
+        private static IReadOnlyList<Dictionary<string, string>> TechnicalDetailRows(
+            string agentContentJson,
+            IReadOnlyList<Dictionary<string, string>> originalFindings,
+            IReadOnlyList<Dictionary<string, string>> customerRows)
+        {
+            var rows = new List<Dictionary<string, string>>
+            {
+                TechnicalRow("Report", "Generated", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss 'UTC'")),
+                TechnicalRow("Report", "Customer-facing sheet", "Contract Quality Review Results")
+            };
+
+            if (!string.IsNullOrWhiteSpace(agentContentJson))
+            {
+                try
+                {
+                    using var document = JsonDocument.Parse(agentContentJson);
+                    FlattenJson(rows, "Agent Content", "", document.RootElement, 0);
+                }
+                catch (JsonException)
+                {
+                    rows.Add(TechnicalRow("Agent Content", "Raw", Truncate(agentContentJson, 4000)));
+                }
+            }
+
+            AddTabularTechnicalRows(rows, "Original Agent Row", originalFindings);
+            AddTabularTechnicalRows(rows, "Customer Summary Row", customerRows);
+            return rows;
+        }
+
+        private static void AddTabularTechnicalRows(List<Dictionary<string, string>> rows, string section, IReadOnlyList<Dictionary<string, string>> sourceRows)
+        {
+            for (var i = 0; i < sourceRows.Count; i++)
+            {
+                foreach (var pair in sourceRows[i])
+                {
+                    rows.Add(TechnicalRow($"{section} {i + 1}", pair.Key, pair.Value));
+                }
+            }
+        }
+
+        private static Dictionary<string, string> TechnicalRow(string section, string field, string value) =>
+            new()
+            {
+                ["Section"] = section,
+                ["Field"] = field,
+                ["Value"] = Truncate(value, 4000)
+            };
+
+        private static void FlattenJson(List<Dictionary<string, string>> rows, string section, string path, JsonElement element, int depth)
+        {
+            if (depth > 5)
+            {
+                rows.Add(TechnicalRow(section, path, element.GetRawText()));
+                return;
+            }
+
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Object:
+                    foreach (var property in element.EnumerateObject())
+                    {
+                        var childPath = string.IsNullOrWhiteSpace(path) ? property.Name : $"{path}.{property.Name}";
+                        FlattenJson(rows, section, childPath, property.Value, depth + 1);
+                    }
+                    break;
+                case JsonValueKind.Array:
+                    var index = 0;
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        if (index >= 100)
+                        {
+                            rows.Add(TechnicalRow(section, $"{path}[more]", "Additional values omitted from the technical workbook tab."));
+                            break;
+                        }
+
+                        FlattenJson(rows, section, $"{path}[{index}]", item, depth + 1);
+                        index++;
+                    }
+
+                    if (index == 0)
+                    {
+                        rows.Add(TechnicalRow(section, path, ""));
+                    }
+                    break;
+                default:
+                    rows.Add(TechnicalRow(section, path, ElementToString(element)));
+                    break;
+            }
+        }
+
         private static string InferDocumentType(string fileName)
         {
             var name = (fileName ?? "").ToUpperInvariant();
@@ -285,6 +549,309 @@ namespace ExportContractFindings
             }
 
             return "";
+        }
+
+        private static string MapCustomerCheck(string value)
+        {
+            var text = (value ?? "").Trim();
+            var normalized = text.ToUpperInvariant();
+            if (normalized.Contains("1A", StringComparison.Ordinal) ||
+                normalized.Contains("THREE-WAY", StringComparison.Ordinal) ||
+                normalized.Contains("NAICS/PSC", StringComparison.Ordinal) ||
+                (normalized.Contains("NAICS", StringComparison.Ordinal) &&
+                 normalized.Contains("PSC", StringComparison.Ordinal) &&
+                 normalized.Contains("SIZE", StringComparison.Ordinal)))
+            {
+                return "NAICS / PSC / Size Standard Match";
+            }
+
+            if (normalized.Contains("1B", StringComparison.Ordinal) ||
+                normalized.Contains("SBA", StringComparison.Ordinal) ||
+                normalized.Contains("SIZE STANDARD CONSISTENCY", StringComparison.Ordinal))
+            {
+                return "NAICS / SBA Size Standard";
+            }
+
+            if (normalized.Contains("1C", StringComparison.Ordinal) ||
+                normalized.Contains("SEMANTIC", StringComparison.Ordinal))
+            {
+                return "Semantic Alignment";
+            }
+
+            if (normalized.Contains("2A", StringComparison.Ordinal) ||
+                normalized.Contains("SAM", StringComparison.Ordinal))
+            {
+                return "SAM Exclusion Search Date";
+            }
+
+            if (normalized.Contains("2B", StringComparison.Ordinal) ||
+                normalized.Contains("D&F", StringComparison.Ordinal) ||
+                normalized.Contains("D\\u0026F", StringComparison.Ordinal) ||
+                normalized.Contains("DETERMINATION", StringComparison.Ordinal))
+            {
+                return "D&F Requirement";
+            }
+
+            return text;
+        }
+
+        private static string NormalizeResult(string value)
+        {
+            var text = (value ?? "").Trim();
+            var normalized = text.ToUpperInvariant();
+            if (normalized is "PASS" or "PASSED")
+            {
+                return "Pass";
+            }
+
+            if (normalized is "N/A" or "NA" or "NOT APPLICABLE" or "NOT_APPLICABLE")
+            {
+                return "Not Applicable";
+            }
+
+            if (normalized is "FLAG" or "FLAGGED" or "REVIEW" or "WARNING" or "FAIL" or "FAILED")
+            {
+                return "Flag";
+            }
+
+            if (normalized.Contains("PASS", StringComparison.Ordinal))
+            {
+                return "Pass";
+            }
+
+            if (normalized.Contains("NOT APPLICABLE", StringComparison.Ordinal))
+            {
+                return "Not Applicable";
+            }
+
+            return string.IsNullOrWhiteSpace(text) ? "Flag" : "Flag";
+        }
+
+        private static string NormalizeRecommendation(string value, string result, string issue)
+        {
+            if (result.Equals("Pass", StringComparison.OrdinalIgnoreCase))
+            {
+                return "No action needed";
+            }
+
+            if (result.Equals("Not Applicable", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Not applicable";
+            }
+
+            var text = (value ?? "").Trim();
+            var normalized = text.ToUpperInvariant();
+            if (normalized.Contains("MISSING", StringComparison.Ordinal) || IndicatesMissingEvidence(issue))
+            {
+                return "Missing evidence";
+            }
+
+            if (normalized.Contains("CONFIRM", StringComparison.Ordinal))
+            {
+                return "Confirm";
+            }
+
+            return "Review";
+        }
+
+        private static string DefaultFieldsReviewed(string check) =>
+            check switch
+            {
+                "NAICS / PSC / Size Standard Match" => "NAICS, PSC, size standard",
+                "NAICS / SBA Size Standard" => "NAICS, size standard",
+                "Semantic Alignment" => "Item/service description, PSC, NAICS",
+                "SAM Exclusion Search Date" => "SAM exclusion search date, award date, issued-by code",
+                "D&F Requirement" => "CLIN type, award date, D&F presence/signature date",
+                _ => ""
+            };
+
+        private static string DefaultValuesCompared(string check) =>
+            check switch
+            {
+                "NAICS / PSC / Size Standard Match" => "DD2579 vs. SF1449 solicitation vs. SF1449 award",
+                "NAICS / SBA Size Standard" => "DD2579 NAICS and size standard vs. SBA Table of Size Standards",
+                "Semantic Alignment" => "DD2579 item/service description vs. identified PSC and NAICS",
+                "SAM Exclusion Search Date" => "SAAD search date vs. SF1449 award date and required 4- or 7-business-day window",
+                "D&F Requirement" => "SF1449 CLIN detail vs. D&F requirement and D&F signature date",
+                _ => ""
+            };
+
+        private static string NormalizeIssue(string result, string issue)
+        {
+            if (result.Equals("Pass", StringComparison.OrdinalIgnoreCase))
+            {
+                return "No issue identified";
+            }
+
+            if (result.Equals("Not Applicable", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(issue))
+            {
+                return "This check does not apply to this package.";
+            }
+
+            return CleanCustomerText(FirstNonEmpty(issue, "Reviewer confirmation is needed."));
+        }
+
+        private static string NormalizeAction(string result, string action, string check)
+        {
+            if (result.Equals("Pass", StringComparison.OrdinalIgnoreCase))
+            {
+                return "No action needed";
+            }
+
+            if (result.Equals("Not Applicable", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(action))
+            {
+                return "No action needed.";
+            }
+
+            return CleanCustomerText(FirstNonEmpty(action, DefaultRecommendedAction(check)));
+        }
+
+        private static string DefaultRecommendedAction(string check) =>
+            check switch
+            {
+                "NAICS / PSC / Size Standard Match" => "Confirm conflicting or missing values in the DD2579 and SF1449 documents, including Block 20 and continuation pages for PSC.",
+                "NAICS / SBA Size Standard" => "Confirm the DD2579 NAICS and size standard against the SBA Table of Size Standards.",
+                "Semantic Alignment" => "Review whether the PSC and NAICS classifications align with the item/service description.",
+                "SAM Exclusion Search Date" => "Confirm the SAAD search date, award date, issued-by code, and required business-day window.",
+                "D&F Requirement" => "Review award schedule/continuation pages. If T&M or labor-hour CLINs are present, confirm a signed D&F predates the award.",
+                _ => "Review the supporting source documents."
+            };
+
+        private static string CleanCustomerText(string value)
+        {
+            var text = (value ?? "").Replace("\r", " ", StringComparison.Ordinal).Replace("\n", " ", StringComparison.Ordinal).Trim();
+            while (text.Contains("  ", StringComparison.Ordinal))
+            {
+                text = text.Replace("  ", " ", StringComparison.Ordinal);
+            }
+
+            if ((text.StartsWith("{", StringComparison.Ordinal) || text.StartsWith("[", StringComparison.Ordinal)) && text.Length > 80)
+            {
+                return "Detailed evidence is available in the Technical Details tab.";
+            }
+
+            var upper = text.ToUpperInvariant();
+            if (upper.Contains("STACK TRACE", StringComparison.Ordinal) ||
+                upper.Contains("QUEUE ITEM", StringComparison.Ordinal) ||
+                upper.Contains("ROBOT ", StringComparison.Ordinal) ||
+                upper.Contains("JOB ID", StringComparison.Ordinal))
+            {
+                return "Detailed processing information is available in the Technical Details tab.";
+            }
+
+            return Truncate(text, CustomerCellLimit);
+        }
+
+        private static string JoinDistinct(IEnumerable<string> values) =>
+            string.Join("; ", values
+                .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Select(v => v.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase));
+
+        private static string DataCompletenessNote(IReadOnlyList<Dictionary<string, string>> findings)
+        {
+            if (!findings.Any(row =>
+                    Get(row, "Result").Equals("Flag", StringComparison.OrdinalIgnoreCase) &&
+                    (Get(row, "Agent Recommendation").Equals("Missing evidence", StringComparison.OrdinalIgnoreCase) ||
+                     IndicatesMissingEvidence(Get(row, "Issue")))))
+            {
+                return "";
+            }
+
+            return "Some checks were flagged because the available documents did not fully confirm the required evidence. A flag does not necessarily mean the contract is non-compliant; it means reviewer confirmation is recommended.";
+        }
+
+        private static bool IndicatesMissingEvidence(string value)
+        {
+            var normalized = (value ?? "").ToUpperInvariant();
+            return normalized.Contains("MISSING", StringComparison.Ordinal) ||
+                   normalized.Contains("CANNOT", StringComparison.Ordinal) ||
+                   normalized.Contains("COULD NOT", StringComparison.Ordinal) ||
+                   normalized.Contains("NOT FOUND", StringComparison.Ordinal) ||
+                   normalized.Contains("NOT ENOUGH", StringComparison.Ordinal) ||
+                   normalized.Contains("INSUFFICIENT", StringComparison.Ordinal) ||
+                   normalized.Contains("UNCONFIRMED", StringComparison.Ordinal) ||
+                   normalized.Contains("NOT RETURN", StringComparison.Ordinal);
+        }
+
+        private static string CustomerOverallStatus(IReadOnlyList<Dictionary<string, string>> findings)
+        {
+            if (findings.Any(row => Get(row, "Result").Equals("Flag", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "Reviewer Action Recommended";
+            }
+
+            return findings.Any(row => Get(row, "Result").Equals("Pass", StringComparison.OrdinalIgnoreCase))
+                ? "No Issues Identified"
+                : "No Applicable Checks";
+        }
+
+        private static int CountReviewedFields(IReadOnlyList<Dictionary<string, string>> findings) =>
+            findings.SelectMany(row => SplitList(Get(row, "Fields Reviewed")))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
+
+        private static bool TryGetProperty(JsonElement element, string name, out JsonElement value)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in element.EnumerateObject())
+                {
+                    if (property.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        value = property.Value;
+                        return true;
+                    }
+                }
+            }
+
+            value = default;
+            return false;
+        }
+
+        private static string GetJsonString(JsonElement element, string name) =>
+            TryGetProperty(element, name, out var value) ? ElementToString(value) : "";
+
+        private static string Truncate(string value, int maxLength)
+        {
+            var text = value ?? "";
+            return text.Length <= maxLength ? text : text.Substring(0, Math.Max(0, maxLength - 3)) + "...";
+        }
+
+        private static string SheetGridXml(string sheetName, IReadOnlyList<IReadOnlyList<string>> rows)
+        {
+            var sb = new StringBuilder();
+            sb.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+            sb.Append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">");
+            sb.Append("<cols>");
+            var widths = new[] { 34, 18, 24, 34, 48, 48, 58 };
+            for (var i = 0; i < widths.Length; i++)
+            {
+                sb.Append("<col min=\"").Append(i + 1).Append("\" max=\"").Append(i + 1).Append("\" width=\"").Append(widths[i]).Append("\" customWidth=\"1\"/>");
+            }
+            sb.Append("</cols><sheetData>");
+
+            for (var i = 0; i < rows.Count; i++)
+            {
+                WriteGridRow(sb, i + 1, rows[i]);
+            }
+
+            sb.Append("</sheetData></worksheet>");
+            return sb.ToString();
+        }
+
+        private static void WriteGridRow(StringBuilder sb, int rowIndex, IReadOnlyList<string> values)
+        {
+            sb.Append("<row r=\"").Append(rowIndex).Append("\">");
+            for (var i = 0; i < values.Count; i++)
+            {
+                var cellRef = ColumnName(i + 1) + rowIndex;
+                sb.Append("<c r=\"").Append(cellRef).Append("\" t=\"inlineStr\"><is><t>");
+                sb.Append(XmlEscape(values[i]));
+                sb.Append("</t></is></c>");
+            }
+
+            sb.Append("</row>");
         }
 
         private static string SheetXml(string sheetName, IReadOnlyList<Dictionary<string, string>> rows)
@@ -453,8 +1020,8 @@ namespace ExportContractFindings
             "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
             "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
             "<sheets>" +
-            "<sheet name=\"Review Summary\" sheetId=\"1\" r:id=\"rId1\"/>" +
-            "<sheet name=\"Findings\" sheetId=\"2\" r:id=\"rId2\"/>" +
+            "<sheet name=\"Contract Quality Review Results\" sheetId=\"1\" r:id=\"rId1\"/>" +
+            "<sheet name=\"Technical Details\" sheetId=\"2\" r:id=\"rId2\"/>" +
             "<sheet name=\"Source Documents\" sheetId=\"3\" r:id=\"rId3\"/>" +
             "</sheets></workbook>";
 

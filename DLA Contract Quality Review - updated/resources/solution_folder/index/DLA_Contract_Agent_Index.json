@@ -1,0 +1,28 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "DLA_Contract_Agent_Index",
+    "kind": "index",
+    "apiVersion": "ecs.uipath.com/v1",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "name": "DLA_Contract_Agent_Index",
+      "description": "",
+      "indexConfigurationJson": "{\"Version\":3,\"Provider\":3,\"DataSource\":{\"Type\":1,\"Properties\":{\"folderName\":\"AMER Presales/Public Sector/DLA Contract Quality Review POC\",\"directoryPath\":\"/\",\"storageBucketName\":\"DLA_Contract_Docs\",\"storageBucketId\":\"00000000-0000-0000-0000-000000000000\",\"fileNameGlob\":\"**/*\"}}}",
+      "fileNameGlob": "All",
+      "includeSubfolders": true,
+      "ingestionType": "Advanced",
+      "encrypted": false
+    },
+    "locks": [],
+    "key": "c554dba3-0141-441e-9ed1-08dec70ee493",
+    "files": []
+  }
+}

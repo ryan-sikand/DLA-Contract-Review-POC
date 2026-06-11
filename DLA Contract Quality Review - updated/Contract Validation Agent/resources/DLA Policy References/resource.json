@@ -1,0 +1,25 @@
+{
+  "$resourceType": "context",
+  "id": "7b1cb8e1-f7d5-4fa0-a6a3-6d9fbb706c3a",
+  "referenceKey": null,
+  "name": "DLA Policy References",
+  "description": "Context Grounding index for SBA size standards, NAICS Manual, and PSC Manual validation evidence.",
+  "contextType": "index",
+  "folderPath": "AMER Presales/Public Sector/DLA Contract Quality Review POC",
+  "indexName": "DLA_Contract_Agent_Index",
+  "settings": {
+    "retrievalMode": "semantic",
+    "query": {
+      "variant": "dynamic",
+      "description": "Search query for SBA size standards, NAICS Manual, or PSC Manual evidence."
+    },
+    "folderPathPrefix": {
+      "variant": "static"
+    },
+    "fileExtension": {
+      "value": "All"
+    },
+    "threshold": 0,
+    "resultCount": 5
+  }
+}
