@@ -52,8 +52,19 @@
     {
       "filePath": "Main.xaml",
       "uniqueId": "9bd6a65e-f78e-4b2a-9772-6b45eb9eb1c5",
-      "input": [],
-      "output": []
+      "input": [
+        {
+          "name": "in_SaadDocumentPath",
+          "type": "String",
+          "required": false
+        }
+      ],
+      "output": [
+        {
+          "name": "out_ContractDataJson",
+          "type": "String"
+        }
+      ]
     }
   ],
   "isTemplate": false,

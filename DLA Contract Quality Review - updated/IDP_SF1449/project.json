@@ -52,8 +52,24 @@
     {
       "filePath": "Main.xaml",
       "uniqueId": "ffebb77f-1db5-47b3-82d8-dbae719c477a",
-      "input": [],
-      "output": []
+      "input": [
+        {
+          "name": "in_Sf1449DocumentPath1",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "in_Sf1449DocumentPath2",
+          "type": "String",
+          "required": false
+        }
+      ],
+      "output": [
+        {
+          "name": "out_ContractDataJson",
+          "type": "String"
+        }
+      ]
     }
   ],
   "isTemplate": false,

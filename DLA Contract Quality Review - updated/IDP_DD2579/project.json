@@ -52,8 +52,19 @@
     {
       "filePath": "Main.xaml",
       "uniqueId": "622b1a2f-ba95-48de-9943-45243bdb6729",
-      "input": [],
-      "output": []
+      "input": [
+        {
+          "name": "in_DdDocumentPath",
+          "type": "String",
+          "required": false
+        }
+      ],
+      "output": [
+        {
+          "name": "out_ContractDataJson",
+          "type": "String"
+        }
+      ]
     }
   ],
   "isTemplate": false,
