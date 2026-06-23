@@ -20,7 +20,7 @@ namespace ExportContractFindings
         private const string DefaultFolderPath = "AMER Presales/Public Sector/DLA Contract Quality Review POC";
         private const string DefaultSharePointFolderUrl = "https://uipath.sharepoint.com/sites/CustomerSuccess-Publicsector/Shared%20Documents/SE%20-%20PubSec/2.%20Demos/DLA%20Contract%20Quality%20Review";
         private const string DefaultOneDriveConnectionId = "27b43e53-db23-4b85-ab3d-4c8693756122";
-        private const int CustomerCellLimit = 260;
+        private const int CustomerCellLimit = 1800;
         private static readonly string[] CustomerColumns =
         {
             "Check",
@@ -28,8 +28,10 @@ namespace ExportContractFindings
             "Agent Recommendation",
             "Fields Reviewed",
             "Values Compared",
-            "Issue",
-            "Recommended Action"
+            "Result Summary",
+            "Recommended Action",
+            "Data Completeness Notes",
+            "Source Documents"
         };
 
         private static readonly string[] RequiredChecks =
@@ -186,9 +188,9 @@ namespace ExportContractFindings
                 File.Delete(path);
             }
 
-            var reportRows = BuildCustomerRows(findings);
             var sourceDocuments = SourceDocumentRows(findings, agentContentJson);
-            var technicalRows = TechnicalDetailRows(agentContentJson, findings, reportRows);
+            var sourceDocumentSummary = SourceDocumentSummary(sourceDocuments);
+            var reportRows = BuildCustomerRows(findings, sourceDocumentSummary);
             var customerGrid = CustomerSummaryGrid(summary, reportRows, sourceDocuments.Count);
 
             using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
@@ -198,8 +200,6 @@ namespace ExportContractFindings
             AddText(archive, "xl/_rels/workbook.xml.rels", WorkbookRelationshipsXml());
             AddText(archive, "xl/styles.xml", StylesXml());
             AddText(archive, "xl/worksheets/sheet1.xml", SheetGridXml("Contract Quality Review Results", customerGrid));
-            AddText(archive, "xl/worksheets/sheet2.xml", SheetXml("Technical Details", technicalRows));
-            AddText(archive, "xl/worksheets/sheet3.xml", SheetXml("Source Documents", sourceDocuments));
         }
 
         private static IReadOnlyList<IReadOnlyList<string>> CustomerSummaryGrid(
@@ -236,18 +236,10 @@ namespace ExportContractFindings
 
             rows.AddRange(findings.Select(row => CustomerColumns.Select(column => Get(row, column)).ToArray()));
 
-            var completenessNote = DataCompletenessNote(findings);
-            if (!string.IsNullOrWhiteSpace(completenessNote))
-            {
-                rows.Add(Array.Empty<string>());
-                rows.Add(new[] { "Data Completeness Notes" });
-                rows.Add(new[] { completenessNote });
-            }
-
             return rows;
         }
 
-        private static List<Dictionary<string, string>> BuildCustomerRows(IReadOnlyList<Dictionary<string, string>> findings)
+        private static List<Dictionary<string, string>> BuildCustomerRows(IReadOnlyList<Dictionary<string, string>> findings, string sourceDocumentSummary)
         {
             var candidates = findings.Select(ToCustomerCandidate)
                 .Where(row => !string.IsNullOrWhiteSpace(Get(row, "Check")))
@@ -261,8 +253,8 @@ namespace ExportContractFindings
                     .ToList();
 
                 rows.Add(matchingRows.Count == 0
-                    ? MissingCheckRow(requiredCheck)
-                    : MergeCustomerRows(requiredCheck, matchingRows));
+                    ? MissingCheckRow(requiredCheck, sourceDocumentSummary)
+                    : MergeCustomerRows(requiredCheck, matchingRows, sourceDocumentSummary));
             }
 
             return rows;
@@ -284,12 +276,14 @@ namespace ExportContractFindings
                 ["Agent Recommendation"] = NormalizeRecommendation(FirstNonEmpty(Get(row, "Agent Recommendation"), Get(row, "Recommendation")), result, issue),
                 ["Fields Reviewed"] = FirstNonEmpty(Get(row, "Fields Reviewed"), Get(row, "Field Reviewed"), Get(row, "FieldName"), DefaultFieldsReviewed(check)),
                 ["Values Compared"] = FirstNonEmpty(Get(row, "Values Compared"), Get(row, "ComparedValues"), CombinedValues(row), DefaultValuesCompared(check)),
-                ["Issue"] = NormalizeIssue(result, issue),
-                ["Recommended Action"] = NormalizeAction(result, action, check)
+                ["Result Summary"] = NormalizeIssue(result, FirstNonEmpty(Get(row, "Result Summary"), issue)),
+                ["Recommended Action"] = NormalizeAction(result, action, check),
+                ["Data Completeness Notes"] = FirstNonEmpty(Get(row, "Data Completeness Notes"), Get(row, "Data Completeness Note")),
+                ["Source Documents"] = FirstNonEmpty(Get(row, "Source Documents"), Get(row, "Documents Reviewed"), Get(row, "SourceFileName"))
             };
         }
 
-        private static Dictionary<string, string> MergeCustomerRows(string check, IReadOnlyList<Dictionary<string, string>> rows)
+        private static Dictionary<string, string> MergeCustomerRows(string check, IReadOnlyList<Dictionary<string, string>> rows, string sourceDocumentSummary)
         {
             var result = rows.Any(r => Get(r, "Result").Equals("Flag", StringComparison.OrdinalIgnoreCase))
                 ? "Flag"
@@ -297,9 +291,12 @@ namespace ExportContractFindings
                     ? "Pass"
                     : "Not Applicable";
 
-            var issue = result.Equals("Pass", StringComparison.OrdinalIgnoreCase)
-                ? "No issue identified"
-                : JoinDistinct(rows.Select(r => Get(r, "Issue")));
+            var issue = JoinDistinct(rows.Select(r => FirstNonEmpty(Get(r, "Result Summary"), Get(r, "Issue"))));
+            if (string.IsNullOrWhiteSpace(issue) && result.Equals("Pass", StringComparison.OrdinalIgnoreCase))
+            {
+                issue = "No issue identified";
+            }
+            var normalizedIssue = CleanCustomerText(NormalizeIssue(result, issue));
 
             return new Dictionary<string, string>
             {
@@ -308,12 +305,14 @@ namespace ExportContractFindings
                 ["Agent Recommendation"] = NormalizeRecommendation(JoinDistinct(rows.Select(r => Get(r, "Agent Recommendation"))), result, issue),
                 ["Fields Reviewed"] = CleanCustomerText(FirstNonEmpty(JoinDistinct(rows.Select(r => Get(r, "Fields Reviewed"))), DefaultFieldsReviewed(check))),
                 ["Values Compared"] = CleanCustomerText(FirstNonEmpty(JoinDistinct(rows.Select(r => Get(r, "Values Compared"))), DefaultValuesCompared(check))),
-                ["Issue"] = CleanCustomerText(NormalizeIssue(result, issue)),
-                ["Recommended Action"] = CleanCustomerText(NormalizeAction(result, JoinDistinct(rows.Select(r => Get(r, "Recommended Action"))), check))
+                ["Result Summary"] = normalizedIssue,
+                ["Recommended Action"] = CleanCustomerText(NormalizeAction(result, JoinDistinct(rows.Select(r => Get(r, "Recommended Action"))), check)),
+                ["Data Completeness Notes"] = CleanCustomerText(FirstNonEmpty(JoinDistinct(rows.Select(r => Get(r, "Data Completeness Notes"))), DataCompletenessNote(result, normalizedIssue, JoinDistinct(rows.Select(r => Get(r, "Agent Recommendation")))))),
+                ["Source Documents"] = CleanCustomerText(FirstNonEmpty(JoinDistinct(rows.Select(r => Get(r, "Source Documents"))), sourceDocumentSummary))
             };
         }
 
-        private static Dictionary<string, string> MissingCheckRow(string check) =>
+        private static Dictionary<string, string> MissingCheckRow(string check, string sourceDocumentSummary) =>
             new()
             {
                 ["Check"] = check,
@@ -321,8 +320,10 @@ namespace ExportContractFindings
                 ["Agent Recommendation"] = "Missing evidence",
                 ["Fields Reviewed"] = DefaultFieldsReviewed(check),
                 ["Values Compared"] = DefaultValuesCompared(check),
-                ["Issue"] = "The agent did not return enough evidence to complete this check.",
-                ["Recommended Action"] = DefaultRecommendedAction(check)
+                ["Result Summary"] = "The agent did not return enough evidence to complete this check.",
+                ["Recommended Action"] = DefaultRecommendedAction(check),
+                ["Data Completeness Notes"] = "The agent did not return a complete row for this required check.",
+                ["Source Documents"] = sourceDocumentSummary
             };
 
         private static IReadOnlyList<Dictionary<string, string>> SourceDocumentRows(IReadOnlyList<Dictionary<string, string>> findings, string agentContentJson)
@@ -357,12 +358,24 @@ namespace ExportContractFindings
                         ["Document Type"] = type,
                         ["File Name"] = file,
                         ["Used In Check"] = FirstNonEmpty(Get(finding, "CheckId"), Get(finding, "Check"), Get(finding, "CheckName")),
-                        ["Notes"] = FirstNonEmpty(Get(finding, "Issue"), Get(finding, "Exception"), Get(finding, "Evidence"))
+                        ["Notes"] = FirstNonEmpty(Get(finding, "Result Summary"), Get(finding, "Issue"), Get(finding, "Exception"), Get(finding, "Evidence"))
                     });
                 }
             }
 
             return rows;
+        }
+
+        private static string SourceDocumentSummary(IReadOnlyList<Dictionary<string, string>> sourceDocuments)
+        {
+            return CleanCustomerText(JoinDistinct(sourceDocuments.Select(row =>
+            {
+                var type = Get(row, "Document Type");
+                var file = Get(row, "File Name");
+                var notes = Get(row, "Notes");
+                var value = SourceDocumentLabel(type, file);
+                return string.IsNullOrWhiteSpace(notes) ? value : $"{value} ({notes})";
+            })));
         }
 
         private static void AddSourceDocumentsFromContent(string agentContentJson, List<Dictionary<string, string>> rows, HashSet<string> seen)
@@ -680,7 +693,7 @@ namespace ExportContractFindings
         {
             if (result.Equals("Pass", StringComparison.OrdinalIgnoreCase))
             {
-                return "No issue identified";
+                return CleanCustomerText(FirstNonEmpty(issue, "No issue identified"));
             }
 
             if (result.Equals("Not Applicable", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(issue))
@@ -727,7 +740,7 @@ namespace ExportContractFindings
 
             if ((text.StartsWith("{", StringComparison.Ordinal) || text.StartsWith("[", StringComparison.Ordinal)) && text.Length > 80)
             {
-                return "Detailed evidence is available in the Technical Details tab.";
+                return "Detailed evidence is available in the source system.";
             }
 
             var upper = text.ToUpperInvariant();
@@ -736,7 +749,7 @@ namespace ExportContractFindings
                 upper.Contains("ROBOT ", StringComparison.Ordinal) ||
                 upper.Contains("JOB ID", StringComparison.Ordinal))
             {
-                return "Detailed processing information is available in the Technical Details tab.";
+                return "Detailed processing information is available in the source system.";
             }
 
             return Truncate(text, CustomerCellLimit);
@@ -748,12 +761,11 @@ namespace ExportContractFindings
                 .Select(v => v.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase));
 
-        private static string DataCompletenessNote(IReadOnlyList<Dictionary<string, string>> findings)
+        private static string DataCompletenessNote(string result, string resultSummary, string recommendation)
         {
-            if (!findings.Any(row =>
-                    Get(row, "Result").Equals("Flag", StringComparison.OrdinalIgnoreCase) &&
-                    (Get(row, "Agent Recommendation").Equals("Missing evidence", StringComparison.OrdinalIgnoreCase) ||
-                     IndicatesMissingEvidence(Get(row, "Issue")))))
+            if (!result.Equals("Flag", StringComparison.OrdinalIgnoreCase) ||
+                (!recommendation.Equals("Missing evidence", StringComparison.OrdinalIgnoreCase) &&
+                 !IndicatesMissingEvidence(resultSummary)))
             {
                 return "";
             }
@@ -818,13 +830,38 @@ namespace ExportContractFindings
             return text.Length <= maxLength ? text : text.Substring(0, Math.Max(0, maxLength - 3)) + "...";
         }
 
+        private static string SourceDocumentLabel(string documentType, string fileName)
+        {
+            var type = FirstNonEmpty(documentType, "Document");
+            var file = Path.GetFileNameWithoutExtension(fileName ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(file))
+            {
+                return type;
+            }
+
+            var normalizedType = NormalizeDocumentToken(type);
+            var normalizedFile = NormalizeDocumentToken(file);
+            return !string.IsNullOrWhiteSpace(normalizedType) && normalizedFile.StartsWith(normalizedType, StringComparison.OrdinalIgnoreCase)
+                ? file
+                : $"{type}: {file}";
+        }
+
+        private static string NormalizeDocumentToken(string value)
+        {
+            var chars = (value ?? "")
+                .Where(char.IsLetterOrDigit)
+                .Select(char.ToUpperInvariant)
+                .ToArray();
+            return new string(chars);
+        }
+
         private static string SheetGridXml(string sheetName, IReadOnlyList<IReadOnlyList<string>> rows)
         {
             var sb = new StringBuilder();
             sb.Append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
             sb.Append("<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">");
             sb.Append("<cols>");
-            var widths = new[] { 34, 18, 24, 34, 48, 48, 58 };
+            var widths = new[] { 34, 18, 24, 34, 85, 72, 72, 58, 64 };
             for (var i = 0; i < widths.Length; i++)
             {
                 sb.Append("<col min=\"").Append(i + 1).Append("\" max=\"").Append(i + 1).Append("\" width=\"").Append(widths[i]).Append("\" customWidth=\"1\"/>");
@@ -842,11 +879,17 @@ namespace ExportContractFindings
 
         private static void WriteGridRow(StringBuilder sb, int rowIndex, IReadOnlyList<string> values)
         {
-            sb.Append("<row r=\"").Append(rowIndex).Append("\">");
+            var isBusinessRuleRow = rowIndex >= 13;
+            sb.Append("<row r=\"").Append(rowIndex).Append("\"");
+            if (isBusinessRuleRow)
+            {
+                sb.Append(" ht=\"108\" customHeight=\"1\"");
+            }
+            sb.Append(">");
             for (var i = 0; i < values.Count; i++)
             {
                 var cellRef = ColumnName(i + 1) + rowIndex;
-                sb.Append("<c r=\"").Append(cellRef).Append("\" t=\"inlineStr\"><is><t>");
+                sb.Append("<c r=\"").Append(cellRef).Append("\" s=\"1\" t=\"inlineStr\"><is><t>");
                 sb.Append(XmlEscape(values[i]));
                 sb.Append("</t></is></c>");
             }
@@ -1006,8 +1049,6 @@ namespace ExportContractFindings
             "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>" +
             "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>" +
             "<Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
-            "<Override PartName=\"/xl/worksheets/sheet2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
-            "<Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>" +
             "</Types>";
 
         private static string RootRelationshipsXml() =>
@@ -1021,16 +1062,12 @@ namespace ExportContractFindings
             "<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">" +
             "<sheets>" +
             "<sheet name=\"Contract Quality Review Results\" sheetId=\"1\" r:id=\"rId1\"/>" +
-            "<sheet name=\"Technical Details\" sheetId=\"2\" r:id=\"rId2\"/>" +
-            "<sheet name=\"Source Documents\" sheetId=\"3\" r:id=\"rId3\"/>" +
             "</sheets></workbook>";
 
         private static string WorkbookRelationshipsXml() =>
             "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
             "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
             "<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>" +
-            "<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet2.xml\"/>" +
-            "<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet3.xml\"/>" +
             "<Relationship Id=\"rId5\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>" +
             "</Relationships>";
 
@@ -1041,7 +1078,8 @@ namespace ExportContractFindings
             "<fills count=\"1\"><fill><patternFill patternType=\"none\"/></fill></fills>" +
             "<borders count=\"1\"><border/></borders>" +
             "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>" +
-            "<cellXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/></cellXfs>" +
+            "<cellXfs count=\"2\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/>" +
+            "<xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\" applyAlignment=\"1\"><alignment wrapText=\"1\" vertical=\"top\"/></xf></cellXfs>" +
             "</styleSheet>";
     }
 }
