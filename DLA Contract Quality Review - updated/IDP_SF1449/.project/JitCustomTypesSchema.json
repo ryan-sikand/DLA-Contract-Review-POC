@@ -1,6 +1,6 @@
 {
   "ExportedBy": "StudioWeb",
-  "BundleHash": "BRhX28COfittEGPhT2gOL0j4GBwOqiZQzDUDZEAySuI",
+  "BundleHash": "OURJvPVDp2bM7aWJIBQSODAm3ujeqFQzMycBm4gg8",
   "Version": "1.0.0.0",
   "JitAssemblyCompilerCommands": [
     {
@@ -8,9 +8,72 @@
       "BundleOptions": {
         "EntitiesBundle": {
           "Types": {
-            "DLAContractSF1449SF1449V10": {
-              "Name": "DLAContractSF1449SF1449V10",
+            "Items": {
+              "Name": "Items",
               "Properties": [
+                {
+                  "Name": "Ammount",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "UnitPrice",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "Unit",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "Quantity",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.Nullable`1[[System.Double, System.Private.CoreLib]], System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "CeilingAmmount",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "ContinuationSuppliesServices",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "ItemNo",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                }
+              ],
+              "Values": [],
+              "BaseType": {
+                "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtendedExtractionResultsForDocumentData, UiPath.IntelligentOCR.StudioWeb.Activities"
+              }
+            },
+            "DLAContractSF1449V2SF1449V16": {
+              "Name": "DLAContractSF1449V2SF1449V16",
+              "Properties": [
+                {
+                  "Name": "NOTE",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
+                {
+                  "Name": "LaborCategoriesAndRates",
+                  "Type": {
+                    "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
+                  }
+                },
                 {
                   "Name": "SOLICITATIONISSUEDATE",
                   "Type": {
@@ -52,6 +115,13 @@
                   "Type": {
                     "ClrType": "UiPath.IntelligentOCR.StudioWeb.Activities.DataExtraction.ExtractedField`1[[System.String, System.Private.CoreLib]], UiPath.IntelligentOCR.StudioWeb.Activities"
                   }
+                },
+                {
+                  "Name": "Items",
+                  "Type": {
+                    "DefinitionName": "Items"
+                  },
+                  "IsCollection": true
                 }
               ],
               "Values": [],
@@ -64,10 +134,10 @@
           "Version": 1
         },
         "Hash": "1381212083",
-        "BundleName": "ExtendedExtractionResultsForDocumentData.DLAContractSF1449SF1449V10"
+        "BundleName": "ExtendedExtractionResultsForDocumentData.DLAContractSF1449V2SF1449V16"
       },
       "EntityAssemblyKey": {
-        "Name": "UiPath.IntelligentOCR.StudioWeb.Activities.SWEntities.ExtendedExtractionResultsForDocumentData.DLAContractSF1449SF1449V10",
+        "Name": "UiPath.IntelligentOCR.StudioWeb.Activities.SWEntities.ExtendedExtractionResultsForDocumentData.DLAContractSF1449V2SF1449V16",
         "Hash": "MTM4MTIxMjA000",
         "AssemblyName": "ExtendedExtractionRe.CustomEntitiesSF1449"
       }

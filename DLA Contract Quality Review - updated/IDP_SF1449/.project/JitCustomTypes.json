@@ -1,1 +1,18 @@
-{"version":"3.0.0.0","bundleHash":"AT9ZYAfKD75HlwSHRZ2dHul7FVxpfzue78pON5YlTqE","addedAssemblyNames":[],"discardedAssemblyNames":[],"discardedAssemblyReplacements":{},"assembliesJitInfo":{}}
+{
+  "version": "3.0.0.0",
+  "bundleHash": "OURJvPVDp2bM7aWJIBQSODAm3ujeqFQzMycBm4gg8",
+  "addedAssemblyNames": [],
+  "discardedAssemblyNames": [],
+  "discardedAssemblyReplacements": {},
+  "assembliesJitInfo": {
+    "ExtendedExtractionRe.CustomEntitiesSF1449": {
+      "createdAt": "2026-06-26T19:23:02.3354015+00:00",
+      "providerName": "CustomEntities",
+      "rootNamespace": "UiPath.IntelligentOCR.StudioWeb.Activities.SWEntities.ExtendedExtractionResultsForDocumentData.DLAContractSF1449V2SF1449V16.Bundle",
+      "typeNames": [
+        "Items",
+        "DLAContractSF1449V2SF1449V16"
+      ]
+    }
+  }
+}
