@@ -1,0 +1,32 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "DLA.Contract.Quality.Review.process.IDP_SF1449",
+    "kind": "package",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "isOverridable": true,
+    "dependencies": [],
+    "runtimeDependencies": [],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "fileName": "DLA.Contract.Quality.Review.process.IDP_SF1449.1.0.77.nupkg",
+      "fileReference": "DLA.Contract.Quality.Review.process.IDP_SF1449_1.0.77",
+      "name": "DLA.Contract.Quality.Review.process.IDP_SF1449"
+    },
+    "locks": [],
+    "key": "DLA.Contract.Quality.Review.process.IDP_SF1449:1.0.77",
+    "files": [
+      {
+        "key": "DLA.Contract.Quality.Review.process.IDP_SF1449_1.0.77",
+        "name": "DLA.Contract.Quality.Review.process.IDP_SF1449.1.0.77.nupkg",
+        "url": "https://cloud.uipath.com/uipathlabs/Playground/orchestrator_/odata/Processes/UiPath.Server.Configuration.OData.DownloadPackage(key='DLA.Contract.Quality.Review.process.IDP_SF1449:1.0.77')?feedId=93949a13-9388-45bb-af90-5783a67e1b33",
+        "kind": "Package",
+        "version": "1.0.77"
+      }
+    ]
+  }
+}

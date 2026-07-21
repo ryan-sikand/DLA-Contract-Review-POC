@@ -13,7 +13,146 @@
         "kind": "package"
       }
     ],
-    "runtimeDependencies": [],
+    "runtimeDependencies": [
+      {
+        "bindingType": "process",
+        "bindingKey": "Contract Validation Agent",
+        "bindingValues": {
+          "folderPath": {
+            "defaultValue": "",
+            "isExpression": false
+          },
+          "name": {
+            "defaultValue": "Contract Validation Agent",
+            "isExpression": false
+          }
+        },
+        "bindingMetadata": {
+          "activityName": "Contract Validation Agent",
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Process",
+        "resourceKey": "a73b6375-add6-470d-895a-e19ab65159ac",
+        "resourceName": "Contract Validation Agent_1",
+        "folderKey": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a"
+      },
+      {
+        "bindingType": "process",
+        "bindingKey": "Export Contract Findings",
+        "bindingValues": {
+          "folderPath": {
+            "defaultValue": "",
+            "isExpression": false
+          },
+          "name": {
+            "defaultValue": "Export Contract Findings",
+            "isExpression": false
+          }
+        },
+        "bindingMetadata": {
+          "activityName": "Export Findings",
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Process",
+        "resourceKey": "7fd6be4a-3e9c-47c5-857d-43ea4f256e2d",
+        "resourceName": "Export Contract Findings_1",
+        "folderKey": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a"
+      },
+      {
+        "bindingType": "process",
+        "bindingKey": "IDP_DD2579",
+        "bindingValues": {
+          "folderPath": {
+            "defaultValue": "",
+            "isExpression": false
+          },
+          "name": {
+            "defaultValue": "IDP_DD2579",
+            "isExpression": false
+          }
+        },
+        "bindingMetadata": {
+          "activityName": "IDP DD2579",
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Process",
+        "resourceKey": "264052f0-f45c-4ac3-b957-5cddaa6e6d24",
+        "resourceName": "IDP_DD2579_1",
+        "folderKey": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a"
+      },
+      {
+        "bindingType": "process",
+        "bindingKey": "IDP_SF1449",
+        "bindingValues": {
+          "folderPath": {
+            "defaultValue": "",
+            "isExpression": false
+          },
+          "name": {
+            "defaultValue": "IDP_SF1449",
+            "isExpression": false
+          }
+        },
+        "bindingMetadata": {
+          "activityName": "IDP SF1449",
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Process",
+        "resourceKey": "a2451d42-9fba-4552-b6cf-348a68000bc6",
+        "resourceName": "IDP_SF1449_1",
+        "folderKey": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a"
+      },
+      {
+        "bindingType": "process",
+        "bindingKey": "IDP_SAAD",
+        "bindingValues": {
+          "folderPath": {
+            "defaultValue": "",
+            "isExpression": false
+          },
+          "name": {
+            "defaultValue": "IDP_SAAD",
+            "isExpression": false
+          }
+        },
+        "bindingMetadata": {
+          "activityName": "IDP SAAD",
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Process",
+        "resourceKey": "df524456-2f6b-4900-b504-e2327c3300b4",
+        "resourceName": "IDP_SAAD_1",
+        "folderKey": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a"
+      },
+      {
+        "bindingType": "process",
+        "bindingKey": "IDP_DF_TR",
+        "bindingValues": {
+          "folderPath": {
+            "defaultValue": "",
+            "isExpression": false
+          },
+          "name": {
+            "defaultValue": "IDP_DF_TR",
+            "isExpression": false
+          }
+        },
+        "bindingMetadata": {
+          "activityName": "IDP DF TR",
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Process",
+        "resourceKey": "9e874b1d-6d1f-4693-8f4b-859a5e7b720e",
+        "resourceName": "IDP_DF_TR_1",
+        "folderKey": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a"
+      }
+    ],
     "folders": [
       {
         "fullyQualifiedName": "solution_folder"

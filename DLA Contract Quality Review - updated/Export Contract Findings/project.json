@@ -76,6 +76,11 @@
           "name": "sharePointFolderUrl",
           "type": "String",
           "required": false
+        },
+        {
+          "name": "contractDataJson",
+          "type": "String",
+          "required": false
         }
       ],
       "output": [
@@ -89,6 +94,10 @@
         },
         {
           "name": "localWorkbookPath",
+          "type": "String"
+        },
+        {
+          "name": "normalizedExcelReportRowsJson",
           "type": "String"
         }
       ]

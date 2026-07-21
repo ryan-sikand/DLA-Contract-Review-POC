@@ -13,7 +13,50 @@
         "kind": "package"
       }
     ],
-    "runtimeDependencies": [],
+    "runtimeDependencies": [
+      {
+        "bindingType": "entity",
+        "bindingKey": "73b82488-f560-f111-8fcb-002248a16d28",
+        "bindingValues": {
+          "name": {
+            "defaultValue": "DLADataService",
+            "isExpression": false
+          },
+          "folderPath": {
+            "defaultValue": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a",
+            "isExpression": false
+          }
+        },
+        "bindingMetadata": {
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true",
+          "scope": "folder"
+        },
+        "resourceKind": "Entity"
+      },
+      {
+        "bindingType": "index",
+        "bindingKey": "DLA_Contract_Agent_Index",
+        "bindingValues": {
+          "name": {
+            "defaultValue": "DLA_Contract_Agent_Index",
+            "isExpression": false
+          },
+          "folderPath": {
+            "defaultValue": "AMER Presales/Public Sector/DLA Contract Quality Review POC",
+            "isExpression": false
+          }
+        },
+        "bindingMetadata": {
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Index",
+        "resourceKey": "c554dba3-0141-441e-9ed1-08dec70ee493",
+        "resourceName": "DLA_Contract_Agent_Index",
+        "folderKey": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a"
+      }
+    ],
     "folders": [
       {
         "fullyQualifiedName": "solution_folder"

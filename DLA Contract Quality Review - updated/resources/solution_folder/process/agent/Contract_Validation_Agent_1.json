@@ -1,0 +1,98 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "Contract Validation Agent_1",
+    "kind": "process",
+    "type": "agent",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "isOverridable": true,
+    "dependencies": [
+      {
+        "kind": "Package",
+        "name": "DLA.Contract.Quality.Review.agent.Contract.Validation.Agent"
+      }
+    ],
+    "runtimeDependencies": [
+      {
+        "bindingType": "entity",
+        "bindingKey": "73b82488-f560-f111-8fcb-002248a16d28",
+        "bindingValues": {
+          "name": {
+            "defaultValue": "DLADataService",
+            "isExpression": false,
+            "displayName": "Entity name"
+          },
+          "folderPath": {
+            "defaultValue": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a",
+            "isExpression": false,
+            "displayName": "Folder path"
+          }
+        },
+        "bindingMetadata": {
+          "scope": "folder",
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Entity",
+        "resourceName": "DLADataService"
+      },
+      {
+        "bindingType": "index",
+        "bindingKey": "DLA_Contract_Agent_Index",
+        "bindingValues": {
+          "name": {
+            "defaultValue": "DLA_Contract_Agent_Index",
+            "isExpression": false,
+            "displayName": "Index Name"
+          },
+          "folderPath": {
+            "defaultValue": "AMER Presales/Public Sector/DLA Contract Quality Review POC",
+            "isExpression": false,
+            "displayName": "Folder path"
+          }
+        },
+        "bindingMetadata": {
+          "bindingsVersion": "2.2",
+          "solutionsSupport": "true"
+        },
+        "resourceKind": "Index",
+        "resourceName": "DLA_Contract_Agent_Index"
+      }
+    ],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Agent",
+      "agentMemory": false,
+      "targetRuntime": "pythonAgent",
+      "environmentVariables": "",
+      "name": "Contract Validation Agent_1",
+      "package": {
+        "name": "DLA.Contract.Quality.Review.agent.Contract.Validation.Agent",
+        "key": "DLA.Contract.Quality.Review.agent.Contract.Validation.Agent:1.0.77"
+      },
+      "packageName": "DLA.Contract.Quality.Review.agent.Contract.Validation.Agent",
+      "packageVersion": "1.0.77",
+      "entryPointUniqueId": "d511ab34-ad1d-4484-a3e7-2ee868d7f72e",
+      "entryPointName": "content/agent.json",
+      "inputArgumentsSchemaV2": "{\n  \"type\": \"object\",\n  \"required\": [],\n  \"properties\": {\n    \"contractDataJson\": {\n      \"type\": \"object\",\n      \"description\": \"Consolidated JSON payload wrapper assembled by Maestro from all DU workflow outputs for a single contract review package.\",\n      \"properties\": {\n        \"payload\": {\n          \"type\": \"string\",\n          \"description\": \"Prefixed JSON text. Remove DLA_JSON_PAYLOAD: before parsing.\"\n        }\n      },\n      \"additionalProperties\": true\n    }\n  }\n}",
+      "outputArgumentsSchemaV2": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"content\": {\n      \"type\": \"string\",\n      \"description\": \"Strict JSON Contract Quality Review Results summary with source records for the one-sheet workbook.\"\n    },\n    \"excelReportRowsJson\": {\n      \"type\": \"string\",\n      \"description\": \"Customer-facing business rule rows for the Contract Quality Review Results workbook, including result summaries, data completeness notes, and source documents.\"\n    },\n    \"excelFindingsFile\": {\n      \"$ref\": \"#/definitions/job-attachment\"\n    }\n  },\n  \"definitions\": {\n    \"job-attachment\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"ID\"\n      ],\n      \"x-uipath-resource-kind\": \"JobAttachment\",\n      \"properties\": {\n        \"ID\": {\n          \"type\": \"string\",\n          \"description\": \"Orchestrator attachment key\"\n        },\n        \"FullName\": {\n          \"type\": \"string\",\n          \"description\": \"File name\"\n        },\n        \"MimeType\": {\n          \"type\": \"string\",\n          \"description\": \"MIME type, e.g. \\\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\\\"\"\n        },\n        \"Metadata\": {\n          \"type\": \"object\",\n          \"description\": \"Dictionary<string, string> of metadata\",\n          \"additionalProperties\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}",
+      "hiddenForAttendedUser": false,
+      "alwaysRunning": false,
+      "autoStartProcess": false,
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180,
+      "entryPoints": "[{\"UniqueId\":\"d511ab34-ad1d-4484-a3e7-2ee868d7f72e\",\"Path\":\"content/agent.json\",\"DisplayName\":null,\"InputArguments\":\"{\\n  \\\"type\\\": \\\"object\\\",\\n  \\\"required\\\": [],\\n  \\\"properties\\\": {\\n    \\\"contractDataJson\\\": {\\n      \\\"type\\\": \\\"object\\\",\\n      \\\"description\\\": \\\"Consolidated JSON payload wrapper assembled by Maestro from all DU workflow outputs for a single contract review package.\\\",\\n      \\\"properties\\\": {\\n        \\\"payload\\\": {\\n          \\\"type\\\": \\\"string\\\",\\n          \\\"description\\\": \\\"Prefixed JSON text. Remove DLA_JSON_PAYLOAD: before parsing.\\\"\\n        }\\n      },\\n      \\\"additionalProperties\\\": true\\n    }\\n  }\\n}\",\"OutputArguments\":\"{\\n  \\\"type\\\": \\\"object\\\",\\n  \\\"properties\\\": {\\n    \\\"content\\\": {\\n      \\\"type\\\": \\\"string\\\",\\n      \\\"description\\\": \\\"Strict JSON Contract Quality Review Results summary with source records for the one-sheet workbook.\\\"\\n    },\\n    \\\"excelReportRowsJson\\\": {\\n      \\\"type\\\": \\\"string\\\",\\n      \\\"description\\\": \\\"Customer-facing business rule rows for the Contract Quality Review Results workbook, including result summaries, data completeness notes, and source documents.\\\"\\n    },\\n    \\\"excelFindingsFile\\\": {\\n      \\\"$ref\\\": \\\"#/definitions/job-attachment\\\"\\n    }\\n  },\\n  \\\"definitions\\\": {\\n    \\\"job-attachment\\\": {\\n      \\\"type\\\": \\\"object\\\",\\n      \\\"required\\\": [\\n        \\\"ID\\\"\\n      ],\\n      \\\"x-uipath-resource-kind\\\": \\\"JobAttachment\\\",\\n      \\\"properties\\\": {\\n        \\\"ID\\\": {\\n          \\\"type\\\": \\\"string\\\",\\n          \\\"description\\\": \\\"Orchestrator attachment key\\\"\\n        },\\n        \\\"FullName\\\": {\\n          \\\"type\\\": \\\"string\\\",\\n          \\\"description\\\": \\\"File name\\\"\\n        },\\n        \\\"MimeType\\\": {\\n          \\\"type\\\": \\\"string\\\",\\n          \\\"description\\\": \\\"MIME type, e.g. \\\\\\\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\\\\\\\"\\\"\\n        },\\n        \\\"Metadata\\\": {\\n          \\\"type\\\": \\\"object\\\",\\n          \\\"description\\\": \\\"Dictionary<string, string> of metadata\\\",\\n          \\\"additionalProperties\\\": {\\n            \\\"type\\\": \\\"string\\\"\\n          }\\n        }\\n      }\\n    }\\n  }\\n}\",\"Type\":4,\"TargetRuntime\":null,\"ContentRoot\":null,\"DataVariation\":null,\"Id\":3933104}]",
+      "tags": []
+    },
+    "locks": [],
+    "key": "a73b6375-add6-470d-895a-e19ab65159ac",
+    "files": []
+  }
+}

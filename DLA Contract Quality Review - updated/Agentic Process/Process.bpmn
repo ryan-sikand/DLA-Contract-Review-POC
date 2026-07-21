@@ -15,6 +15,7 @@
         <uipath:inputOutput id="contractDataJson" name="contractDataJson" type="string" default="" />
         <uipath:inputOutput id="content" name="content" type="string" default="" />
         <uipath:inputOutput id="excelReportRowsJson" name="excelReportRowsJson" type="string" default="" />
+        <uipath:inputOutput id="normalizedExcelReportRowsJson" name="normalizedExcelReportRowsJson" type="string" default="" />
         <uipath:inputOutput id="bucketFilePath" name="bucketFilePath" type="string" default="" />
         <uipath:inputOutput id="sharePointUploadStatus" name="sharePointUploadStatus" type="string" default="" />
         <uipath:inputOutput id="localWorkbookPath" name="localWorkbookPath" type="string" default="" />
@@ -268,11 +269,12 @@ return {
             <uipath:input name="folderPath" type="string" value="=bindings.bExportFindingsFolderPath" />
             <uipath:input name="_label" type="string" value="Export Contract Findings" />
           </uipath:context>
-          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"excelReportRowsJson":"=vars.excelReportRowsJson","agentContentJson":"=vars.content","storageBucketName":"DLA_Contract_Docs","orchestratorFolderPath":"AMER Presales/Public Sector/DLA Contract Quality Review POC","sharePointFolderUrl":"https://uipath.sharepoint.com/sites/CustomerSuccess-Publicsector/Shared%20Documents/SE%20-%20PubSec/2.%20Demos/DLA%20Contract%20Quality%20Review"}]]></uipath:input>
+          <uipath:input name="JobArguments" type="json" target="bodyField"><![CDATA[{"excelReportRowsJson":"=vars.excelReportRowsJson","agentContentJson":"=vars.content","storageBucketName":"DLA_Contract_Docs","orchestratorFolderPath":"AMER Presales/Public Sector/DLA Contract Quality Review POC","sharePointFolderUrl":"https://uipath.sharepoint.com/sites/CustomerSuccess-Publicsector/Shared%20Documents/SE%20-%20PubSec/2.%20Demos/DLA%20Contract%20Quality%20Review","contractDataJson":"=vars.contractDataJson"}]]></uipath:input>
           <uipath:output name="Error" type="jsonSchema" source="=Error" var="errorExportFindings" />
           <uipath:output name="bucketFilePath" type="string" source="=bucketFilePath" var="bucketFilePath" />
           <uipath:output name="sharePointUploadStatus" type="string" source="=sharePointUploadStatus" var="sharePointUploadStatus" />
           <uipath:output name="localWorkbookPath" type="string" source="=localWorkbookPath" var="localWorkbookPath" />
+          <uipath:output name="normalizedExcelReportRowsJson" type="string" source="=normalizedExcelReportRowsJson" var="normalizedExcelReportRowsJson" />
         </uipath:activity>
       </bpmn:extensionElements>
       <bpmn:incoming>edge_agent_export</bpmn:incoming>

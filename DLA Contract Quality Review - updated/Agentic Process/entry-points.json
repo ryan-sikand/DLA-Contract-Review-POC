@@ -48,6 +48,10 @@
             "type": "string",
             "description": "Excel-ready findings rows as JSON for downstream reporting."
           },
+          "normalizedExcelReportRowsJson": {
+            "type": "string",
+            "description": "Final Excel-ready findings rows after deterministic export normalization."
+          },
           "bucketFilePath": {
             "type": "string",
             "description": "Storage bucket path for the generated Excel workbook."

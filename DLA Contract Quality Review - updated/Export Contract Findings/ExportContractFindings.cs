@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UiPath.CodedWorkflows;
 using UiPath.Core;
@@ -44,12 +46,13 @@ namespace ExportContractFindings
         };
 
         [Workflow]
-        public async Task<(string bucketFilePath, string sharePointUploadStatus, string localWorkbookPath)> Execute(
+        public async Task<(string bucketFilePath, string sharePointUploadStatus, string localWorkbookPath, string normalizedExcelReportRowsJson)> Execute(
             string excelReportRowsJson,
             string agentContentJson = "",
             string storageBucketName = "",
             string orchestratorFolderPath = "",
-            string sharePointFolderUrl = "")
+            string sharePointFolderUrl = "",
+            string contractDataJson = "")
         {
             if (string.IsNullOrWhiteSpace(excelReportRowsJson))
             {
@@ -61,6 +64,10 @@ namespace ExportContractFindings
             sharePointFolderUrl = string.IsNullOrWhiteSpace(sharePointFolderUrl) ? DefaultSharePointFolderUrl : sharePointFolderUrl;
 
             var rows = ParseRows(excelReportRowsJson);
+            ApplyDeterministicSamValidation(rows, contractDataJson);
+            ApplySamResultConsistencyGuard(rows);
+            ApplySemanticAlignmentConsistencyGuard(rows, contractDataJson);
+            var normalizedExcelReportRowsJson = SerializeRows(rows);
             var content = ParseObject(agentContentJson);
             var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
             var fileName = $"DLA_Contract_Quality_Findings_{timestamp}.xlsx";
@@ -79,7 +86,7 @@ namespace ExportContractFindings
             var sharePointStatus = await TryUploadToSharePointAsync(localWorkbookPath, fileName, sharePointFolderUrl);
             Log($"Exported workbook to bucket path '{bucketPath}'. SharePoint status: {sharePointStatus}");
 
-            return (bucketPath, sharePointStatus, localWorkbookPath);
+            return (bucketPath, sharePointStatus, localWorkbookPath, normalizedExcelReportRowsJson);
         }
 
         private async Task<string> TryUploadToSharePointAsync(string localFilePath, string fileName, string sharePointFolderUrl)
@@ -105,6 +112,604 @@ namespace ExportContractFindings
             }
         }
 
+        private static void ApplyDeterministicSamValidation(List<Dictionary<string, string>> rows, string contractDataJson)
+        {
+            if (!TryBuildSamValidationRow(contractDataJson, out var samRow))
+            {
+                ApplySamRowConsistencyFallback(rows);
+                return;
+            }
+
+            var existing = rows.FirstOrDefault(row =>
+                MapCustomerCheck(FirstNonEmpty(Get(row, "Check"), Get(row, "CheckName"), Get(row, "Review Item")))
+                    .Equals("SAM Exclusion Search Date", StringComparison.OrdinalIgnoreCase));
+
+            if (existing == null)
+            {
+                rows.Add(samRow);
+                return;
+            }
+
+            existing["Check"] = "SAM Exclusion Search Date";
+            foreach (var pair in samRow)
+            {
+                existing[pair.Key] = pair.Value;
+            }
+        }
+
+        private static void ApplySamRowConsistencyFallback(List<Dictionary<string, string>> rows)
+        {
+            var existing = rows.FirstOrDefault(row =>
+                MapCustomerCheck(FirstNonEmpty(Get(row, "Check"), Get(row, "CheckName"), Get(row, "Review Item")))
+                    .Equals("SAM Exclusion Search Date", StringComparison.OrdinalIgnoreCase));
+
+            if (existing == null)
+            {
+                return;
+            }
+
+            var evidence = string.Join(" ",
+                Get(existing, "Values Compared"),
+                Get(existing, "Result Summary"),
+                Get(existing, "Data Completeness Notes"));
+
+            if (!evidence.Contains("SAAD", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var hasDates = TryExtractSamDatesAndWindow(
+                evidence,
+                out var samDate,
+                out var awardDate,
+                out var requiredWindow,
+                out var issuedByCode,
+                out var samFile,
+                out var awardFile);
+            int count;
+            bool isAfterAward;
+            string countedDatesText;
+            if (hasDates)
+            {
+                var countedDates = BusinessDayDatesBeforeAward(samDate, awardDate);
+                count = countedDates.Count;
+                isAfterAward = samDate.Date > awardDate.Date;
+                countedDatesText = FormatDateList(countedDates);
+            }
+            else if (TryExtractSamCountAndWindow(evidence, out count, out requiredWindow))
+            {
+                isAfterAward = false;
+                countedDatesText = "";
+                samFile = "SAAD";
+                awardFile = "SF1449 award";
+                issuedByCode = "";
+            }
+            else
+            {
+                return;
+            }
+
+            var passes = !isAfterAward && count <= requiredWindow;
+            var reason = isAfterAward
+                ? "the SAM exclusion search date is after the SF1449 award/effective date"
+                : $"the computed business-day count is {count}, which is outside the required {requiredWindow}-business-day window";
+            existing["Check"] = "SAM Exclusion Search Date";
+            existing["Result"] = passes ? "Pass" : "Flag";
+            existing["Agent Recommendation"] = passes ? "No action needed" : "Review";
+            existing["Fields Reviewed"] = "SAM exclusion search date, award date, issued-by code";
+            existing["Recommended Action"] = passes ? "No action needed" : "Review required";
+            existing["Data Completeness Notes"] = passes
+                ? ""
+                : reason + ".";
+            existing["Result Summary"] = passes
+                ? $"The SAM exclusion search date check passes because the computed business-day count is {count}, which is within the required {requiredWindow}-business-day window."
+                : $"The SAM exclusion search date check is flagged because {reason}.";
+            if (hasDates)
+            {
+                existing["Values Compared"] =
+                    $"SAAD {samFile} date {FormatDate(samDate)}; SF1449 award {awardFile} date {FormatDate(awardDate)}; issued-by code {DisplayValue(issuedByCode)}; required window {requiredWindow} business days; computed count {count}; counted business days {countedDatesText}";
+                existing["Source Documents"] = JoinDistinct(new[] { samFile, awardFile });
+            }
+        }
+
+        private static bool TryExtractSamDatesAndWindow(
+            string evidence,
+            out DateTime samDate,
+            out DateTime awardDate,
+            out int requiredWindow,
+            out string issuedByCode,
+            out string samFile,
+            out string awardFile)
+        {
+            samDate = default;
+            awardDate = default;
+            requiredWindow = 0;
+            issuedByCode = "";
+            samFile = "SAAD";
+            awardFile = "SF1449 award";
+            var text = evidence ?? "";
+            var samMatch = Regex.Match(
+                text,
+                @"SAAD\s+(?<file>[^.;\r\n]+?)\s+date\s+(?<date>\d{1,2}/\d{1,2}/\d{2,4})",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            var awardMatch = Regex.Match(
+                text,
+                @"SF1449\s+award\s+(?<file>[^.;\r\n]+?)\s+date\s+(?<date>\d{1,2}/\d{1,2}/\d{2,4})",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            var windowMatch = Regex.Match(
+                text,
+                @"(?:required\s+window|requires\s+a|required)\s*(\d+)\s*-?\s*business",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            var issuedByMatch = Regex.Match(
+                text,
+                @"issued-by\s+code\s+(?<code>[A-Z0-9]+)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+            if (!samMatch.Success ||
+                !awardMatch.Success ||
+                !windowMatch.Success ||
+                !TryParseDate(samMatch.Groups["date"].Value, out samDate) ||
+                !TryParseDate(awardMatch.Groups["date"].Value, out awardDate) ||
+                !int.TryParse(windowMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out requiredWindow))
+            {
+                return false;
+            }
+
+            samFile = samMatch.Groups["file"].Value.Trim();
+            awardFile = awardMatch.Groups["file"].Value.Trim();
+            issuedByCode = issuedByMatch.Success ? issuedByMatch.Groups["code"].Value.Trim().ToUpperInvariant() : "";
+            return true;
+        }
+
+        private static void ApplySamResultConsistencyGuard(List<Dictionary<string, string>> rows)
+        {
+            var existing = rows.FirstOrDefault(row =>
+                MapCustomerCheck(FirstNonEmpty(Get(row, "Check"), Get(row, "CheckName"), Get(row, "Review Item")))
+                    .Equals("SAM Exclusion Search Date", StringComparison.OrdinalIgnoreCase));
+
+            if (existing == null)
+            {
+                return;
+            }
+
+            var evidence = string.Join(" ",
+                Get(existing, "Values Compared"),
+                Get(existing, "Result Summary"),
+                Get(existing, "Data Completeness Notes"));
+
+            if (!TryExtractSamCountAndWindow(evidence, out var count, out var requiredWindow))
+            {
+                return;
+            }
+
+            var passes = count <= requiredWindow;
+            existing["Check"] = "SAM Exclusion Search Date";
+            existing["Result"] = passes ? "Pass" : "Flag";
+            existing["Agent Recommendation"] = passes ? "No action needed" : "Review";
+            existing["Fields Reviewed"] = "SAM exclusion search date, award date, issued-by code";
+            existing["Recommended Action"] = passes ? "No action needed" : "Review required";
+
+            if (passes)
+            {
+                existing["Data Completeness Notes"] = "";
+                existing["Result Summary"] = $"The SAM exclusion search date check passes because the computed business-day count is {count}, which is within the required {requiredWindow}-business-day window.";
+            }
+            else
+            {
+                var reason = $"the computed business-day count is {count}, which is outside the required {requiredWindow}-business-day window";
+                existing["Data Completeness Notes"] = reason + ".";
+                existing["Result Summary"] = $"The SAM exclusion search date check is flagged because {reason}.";
+            }
+        }
+
+        private static bool TryExtractSamCountAndWindow(string evidence, out int count, out int requiredWindow)
+        {
+            count = 0;
+            requiredWindow = 0;
+            var text = evidence ?? "";
+            var countMatch = Regex.Match(
+                text,
+                @"computed(?:\s+business-day)?(?:\s+count|\s+conclusion)?(?:\s+is|:)?\s*(\d+)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            var windowMatch = Regex.Match(
+                text,
+                @"(?:required\s+window|requires\s+a|required)\s*(\d+)\s*-?\s*business",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+            return countMatch.Success &&
+                   windowMatch.Success &&
+                   int.TryParse(countMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out count) &&
+                   int.TryParse(windowMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out requiredWindow);
+        }
+
+        private static bool TryBuildSamValidationRow(string contractDataJson, out Dictionary<string, string> row)
+        {
+            row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (!TryReadDocumentArray(contractDataJson, out var documents))
+            {
+                return false;
+            }
+
+            var saad = documents.FirstOrDefault(document =>
+                GetJsonString(document, "documentType").Equals("SAAD", StringComparison.OrdinalIgnoreCase));
+            if (saad.ValueKind == JsonValueKind.Undefined)
+            {
+                row = SamRow(
+                    "Flag",
+                    "Review",
+                    "Review required",
+                    "SAAD not found",
+                    "The SAM exclusion search date check is flagged because no SAAD document record was available in the consolidated DU payload.",
+                    "No SAAD document record was available in the consolidated DU payload.",
+                    "SAAD missing; SF1449 award not evaluated",
+                    "");
+                return true;
+            }
+
+            var award = documents.FirstOrDefault(document =>
+                GetJsonString(document, "documentType").Equals("SF1449", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(GetJsonString(document, "awardEffectiveDate")));
+
+            var samFile = SourceDocumentLabel("SAAD", GetJsonString(saad, "sourceFileName"));
+            var samDateText = FirstNonEmpty(
+                GetJsonString(saad, "saadSamCheckedDate"),
+                GetJsonString(saad, "saadSamCheckedDateRaw"));
+            if (award.ValueKind == JsonValueKind.Undefined)
+            {
+                row = SamRow(
+                    "Flag",
+                    "Review",
+                    "Review required",
+                    "award date missing",
+                    $"The SAM exclusion search date check is flagged because no SF1449 award record with an award/effective date was available. Values reviewed: SAAD {samFile} date {DisplayDate(samDateText)}; SF1449 award date missing; required window not computed; computed count not computed.",
+                    "SF1449 award/effective date was not available in the consolidated DU payload.",
+                    $"SAAD {samFile} date {DisplayDate(samDateText)}; SF1449 award date missing; required window not computed; computed count not computed",
+                    samFile);
+                return true;
+            }
+
+            var awardFile = SourceDocumentLabel("SF1449", GetJsonString(award, "sourceFileName"));
+            var awardDateText = GetJsonString(award, "awardEffectiveDate");
+            var issuedByCode = GetJsonString(award, "issuedByCode").Trim();
+            var sourceDocuments = JoinDistinct(new[] { samFile, awardFile });
+            var requiredWindow = RequiredSamWindow(issuedByCode);
+
+            if (!TryParseDate(samDateText, out var samDate))
+            {
+                row = SamRow(
+                    "Flag",
+                    "Review",
+                    "Review required",
+                    "SAM date missing or unparseable",
+                    $"The SAM exclusion search date check is flagged because the SAAD SAM exclusion search date is missing or cannot be parsed. Values reviewed: SAAD {samFile} date {DisplayDate(samDateText)}; SF1449 award {awardFile} date {DisplayDate(awardDateText)}; issued-by code {DisplayValue(issuedByCode)}; required window {requiredWindow} business days; computed count not computed.",
+                    "SAAD SAM exclusion search date was missing or could not be parsed.",
+                    $"SAAD {samFile} date {DisplayDate(samDateText)}; SF1449 award {awardFile} date {DisplayDate(awardDateText)}; issued-by code {DisplayValue(issuedByCode)}; required window {requiredWindow} business days; computed count not computed",
+                    sourceDocuments);
+                return true;
+            }
+
+            if (!TryParseDate(awardDateText, out var awardDate))
+            {
+                row = SamRow(
+                    "Flag",
+                    "Review",
+                    "Review required",
+                    "award date missing or unparseable",
+                    $"The SAM exclusion search date check is flagged because the SF1449 award/effective date is missing or cannot be parsed. Values reviewed: SAAD {samFile} date {FormatDate(samDate)}; SF1449 award {awardFile} date {DisplayDate(awardDateText)}; issued-by code {DisplayValue(issuedByCode)}; required window {requiredWindow} business days; computed count not computed.",
+                    "SF1449 award/effective date was missing or could not be parsed.",
+                    $"SAAD {samFile} date {FormatDate(samDate)}; SF1449 award {awardFile} date {DisplayDate(awardDateText)}; issued-by code {DisplayValue(issuedByCode)}; required window {requiredWindow} business days; computed count not computed",
+                    sourceDocuments);
+                return true;
+            }
+
+            var countedDates = BusinessDayDatesBeforeAward(samDate, awardDate);
+            var count = countedDates.Count;
+            var countedDatesText = FormatDateList(countedDates);
+            var isAfterAward = samDate.Date > awardDate.Date;
+            var passes = !isAfterAward && count <= requiredWindow;
+            var result = passes ? "Pass" : "Flag";
+            var recommendation = passes ? "No action needed" : "Review";
+            var action = passes ? "No action needed" : "Review required";
+            var reason = isAfterAward
+                ? "the SAM exclusion search date is after the SF1449 award/effective date"
+                : $"the computed business-day count is {count}, which is outside the {requiredWindow}-business-day window";
+            var summary = passes
+                ? $"The SAAD SAM exclusion search date is {FormatDate(samDate)}; the SF1449 award date is {FormatDate(awardDate)}; issued-by code {DisplayValue(issuedByCode)} requires a {requiredWindow}-business-day window; the computed business-day count is {count}, so the check passes."
+                : $"The SAM exclusion search date check is flagged because {reason}. Values reviewed: SAAD {samFile} date {FormatDate(samDate)}; SF1449 award {awardFile} date {FormatDate(awardDate)}; issued-by code {DisplayValue(issuedByCode)}; required window {requiredWindow} business days; computed count {count}.";
+            var dataNotes = passes ? "" : reason + ".";
+            var valuesCompared = $"SAAD {samFile} date {FormatDate(samDate)}; SF1449 award {awardFile} date {FormatDate(awardDate)}; issued-by code {DisplayValue(issuedByCode)}; required window {requiredWindow} business days; computed count {count}; counted business days {countedDatesText}";
+
+            row = SamRow(result, recommendation, action, reason, summary, dataNotes, valuesCompared, sourceDocuments);
+            return true;
+        }
+
+        private static Dictionary<string, string> SamRow(
+            string result,
+            string recommendation,
+            string action,
+            string reason,
+            string summary,
+            string dataCompletenessNotes,
+            string valuesCompared,
+            string sourceDocuments) =>
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Check"] = "SAM Exclusion Search Date",
+                ["Result"] = result,
+                ["Agent Recommendation"] = recommendation,
+                ["Fields Reviewed"] = "SAM exclusion search date, award date, issued-by code",
+                ["Values Compared"] = valuesCompared,
+                ["Result Summary"] = summary,
+                ["Recommended Action"] = action,
+                ["Data Completeness Notes"] = dataCompletenessNotes,
+                ["Source Documents"] = sourceDocuments
+            };
+
+        private static bool TryReadDocumentArray(string contractDataJson, out List<JsonElement> documents)
+        {
+            documents = new List<JsonElement>();
+            var payload = NormalizeContractPayload(contractDataJson);
+            if (string.IsNullOrWhiteSpace(payload))
+            {
+                return false;
+            }
+
+            try
+            {
+                using var document = JsonDocument.Parse(payload);
+                if (!TryGetProperty(document.RootElement, "documents", out var documentArray) ||
+                    documentArray.ValueKind != JsonValueKind.Array)
+                {
+                    return false;
+                }
+
+                documents = documentArray.EnumerateArray()
+                    .Where(item => item.ValueKind == JsonValueKind.Object)
+                    .Select(item => item.Clone())
+                    .ToList();
+                return documents.Count > 0;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
+
+        private static string NormalizeContractPayload(string contractDataJson)
+        {
+            var payload = (contractDataJson ?? "").Trim();
+            const string prefix = "DLA_JSON_PAYLOAD:";
+            if (payload.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                payload = payload.Substring(prefix.Length).Trim();
+            }
+
+            if (!payload.StartsWith("{", StringComparison.Ordinal))
+            {
+                return payload;
+            }
+
+            try
+            {
+                using var document = JsonDocument.Parse(payload);
+                if (TryGetProperty(document.RootElement, "payload", out var payloadElement))
+                {
+                    return NormalizeContractPayload(ElementToString(payloadElement));
+                }
+            }
+            catch (JsonException)
+            {
+                return payload;
+            }
+
+            return payload;
+        }
+
+        private static int RequiredSamWindow(string issuedByCode)
+        {
+            var code = (issuedByCode ?? "").Trim().ToUpperInvariant();
+            return code is "SPRPA1" or "SPRMM1" or "SPRDL1" or "SPRBL1" or "SPMYM1"
+                ? 7
+                : 4;
+        }
+
+        private static void ApplySemanticAlignmentConsistencyGuard(List<Dictionary<string, string>> rows, string contractDataJson)
+        {
+            var existing = rows.FirstOrDefault(row =>
+                MapCustomerCheck(FirstNonEmpty(Get(row, "Check"), Get(row, "CheckName"), Get(row, "Review Item")))
+                    .Equals("Semantic Alignment", StringComparison.OrdinalIgnoreCase));
+
+            if (!TryBuildSemanticAlignmentCorrection(contractDataJson, out var correction) &&
+                (existing == null || !TryBuildSemanticAlignmentCorrection(existing, out correction)))
+            {
+                return;
+            }
+
+            if (existing == null)
+            {
+                rows.Add(correction);
+                return;
+            }
+
+            existing["Check"] = "Semantic Alignment";
+            foreach (var pair in correction)
+            {
+                existing[pair.Key] = pair.Value;
+            }
+        }
+
+        private static bool TryBuildSemanticAlignmentCorrection(string contractDataJson, out Dictionary<string, string> row)
+        {
+            row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (!TryReadDocumentArray(contractDataJson, out var documents))
+            {
+                return false;
+            }
+
+            var dd2579 = documents.FirstOrDefault(document =>
+                GetJsonString(document, "documentType").Equals("DD2579", StringComparison.OrdinalIgnoreCase));
+            if (dd2579.ValueKind == JsonValueKind.Undefined)
+            {
+                return false;
+            }
+
+            var dd2579File = SourceDocumentLabel("DD2579", GetJsonString(dd2579, "sourceFileName"));
+            var description = GetJsonString(dd2579, "itemServiceDescription");
+            var psc = GetJsonString(dd2579, "productOrServiceCode").Trim().ToUpperInvariant();
+            var naics = GetJsonString(dd2579, "naicsCode").Trim();
+            if (!PscJ011ConflictsWithAircraftRepair(psc, description))
+            {
+                return false;
+            }
+
+            row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Check"] = "Semantic Alignment",
+                ["Result"] = "Flag",
+                ["Agent Recommendation"] = "Review",
+                ["Fields Reviewed"] = "Item/service description, PSC, NAICS",
+                ["Values Compared"] =
+                    $"{dd2579File} item/service description: {DisplayValue(description)}; {dd2579File} PSC: {DisplayValue(psc)}; {dd2579File} NAICS: {DisplayValue(naics)}; PSC Manual evidence: J011 is maintenance, repair, and rebuilding of equipment - nuclear ordnance; expected aircraft component/accessory maintenance and repair PSC family is J016. NAICS Manual evidence: {DisplayValue(naics)} should still be evaluated against the item/service description.",
+                ["Result Summary"] =
+                    $"The check is flagged because the DD2579 item/service description describes aircraft component inspection and repair services, but PSC {psc} maps to maintenance, repair, and rebuilding of nuclear ordnance rather than aircraft components and accessories.",
+                ["Recommended Action"] =
+                    "Review DD2579 Block 7b and confirm whether the PSC should be J016 for aircraft components and accessories.",
+                ["Data Completeness Notes"] =
+                    "Semantic Alignment was corrected from the DD2579 evidence and PSC Manual code family because PSC J011 conflicts with aircraft component repair language.",
+                ["Source Documents"] = dd2579File
+            };
+            return true;
+        }
+
+        private static bool TryBuildSemanticAlignmentCorrection(
+            Dictionary<string, string> existing,
+            out Dictionary<string, string> row)
+        {
+            row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var evidence = string.Join(" ",
+                Get(existing, "Values Compared"),
+                Get(existing, "Result Summary"),
+                Get(existing, "Data Completeness Notes"));
+
+            if (string.IsNullOrWhiteSpace(evidence) ||
+                !Regex.IsMatch(evidence, @"\bPSC\s*:\s*J011\b|\bPSC\s+J011\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) ||
+                !PscJ011ConflictsWithAircraftRepair("J011", evidence))
+            {
+                return false;
+            }
+
+            var sourceDocuments = FirstNonEmpty(Get(existing, "Source Documents"), "DD2579");
+            row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Check"] = "Semantic Alignment",
+                ["Result"] = "Flag",
+                ["Agent Recommendation"] = "Review",
+                ["Fields Reviewed"] = "Item/service description, PSC, NAICS",
+                ["Values Compared"] =
+                    $"{FirstNonEmpty(Get(existing, "Values Compared"), "DD2579 item/service description references aircraft component inspection and repair; DD2579 PSC J011; DD2579 NAICS 488190")}; PSC Manual evidence: J011 is maintenance, repair, and rebuilding of equipment - nuclear ordnance; expected aircraft component/accessory maintenance and repair PSC family is J016.",
+                ["Result Summary"] =
+                    "The check is flagged because the DD2579 item/service description describes aircraft component inspection and repair services, but PSC J011 maps to maintenance, repair, and rebuilding of nuclear ordnance rather than aircraft components and accessories.",
+                ["Recommended Action"] =
+                    "Review DD2579 Block 7b and confirm whether the PSC should be J016 for aircraft components and accessories.",
+                ["Data Completeness Notes"] =
+                    "Semantic Alignment was corrected from the DD2579 evidence and PSC Manual code family because PSC J011 conflicts with aircraft component repair language.",
+                ["Source Documents"] = sourceDocuments
+            };
+            return true;
+        }
+
+        private static bool PscJ011ConflictsWithAircraftRepair(string psc, string description)
+        {
+            if (!psc.Equals("J011", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(description))
+            {
+                return false;
+            }
+
+            var normalizedDescription = description.ToUpperInvariant();
+            var describesAircraft = normalizedDescription.Contains("AIRCRAFT", StringComparison.Ordinal) ||
+                                    normalizedDescription.Contains("TURBOPROP", StringComparison.Ordinal) ||
+                                    normalizedDescription.Contains("ENGINE", StringComparison.Ordinal);
+            var describesRepair = normalizedDescription.Contains("COMPONENT", StringComparison.Ordinal) ||
+                                  normalizedDescription.Contains("INSPECTION", StringComparison.Ordinal) ||
+                                  normalizedDescription.Contains("REPAIR", StringComparison.Ordinal) ||
+                                  normalizedDescription.Contains("MAINTENANCE", StringComparison.Ordinal) ||
+                                  normalizedDescription.Contains("REBUILD", StringComparison.Ordinal);
+
+            return describesAircraft && describesRepair;
+        }
+
+        private static int CountBusinessDaysBeforeAward(DateTime samDate, DateTime awardDate) =>
+            BusinessDayDatesBeforeAward(samDate, awardDate).Count;
+
+        private static List<DateTime> BusinessDayDatesBeforeAward(DateTime samDate, DateTime awardDate)
+        {
+            var dates = new List<DateTime>();
+            if (samDate.Date > awardDate.Date)
+            {
+                return dates;
+            }
+
+            for (var date = samDate.Date; date < awardDate.Date; date = date.AddDays(1))
+            {
+                if (date.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday)
+                {
+                    dates.Add(date);
+                }
+            }
+
+            return dates;
+        }
+
+        private static bool TryParseDate(string value, out DateTime parsed)
+        {
+            parsed = default;
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            var text = value.Trim();
+            var formats = new[]
+            {
+                "M/d/yyyy",
+                "MM/dd/yyyy",
+                "M/d/yyyy HH:mm:ss",
+                "MM/dd/yyyy HH:mm:ss",
+                "M/d/yyyy h:mm:ss tt",
+                "MM/dd/yyyy h:mm:ss tt",
+                "yyyy-MM-dd",
+                "yyyy-MM-ddTHH:mm:ss",
+                "yyyy-MM-ddTHH:mm:ss.fff",
+                "dd MMM yyyy",
+                "dd MMMM yyyy",
+                "MMM d yyyy",
+                "MMMM d yyyy"
+            };
+
+            return DateTime.TryParseExact(
+                    text,
+                    formats,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AllowWhiteSpaces,
+                    out parsed)
+                || DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out parsed);
+        }
+
+        private static string FormatDate(DateTime value) =>
+            value.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+        private static string FormatDateList(IEnumerable<DateTime> values)
+        {
+            var dates = values.Select(FormatDate).ToList();
+            return dates.Count == 0 ? "none" : string.Join(", ", dates);
+        }
+
+        private static string DisplayDate(string value) =>
+            string.IsNullOrWhiteSpace(value) ? "missing" : value.Trim();
+
+        private static string DisplayValue(string value) =>
+            string.IsNullOrWhiteSpace(value) ? "missing" : value.Trim();
+
         private static List<Dictionary<string, string>> ParseRows(string rowsJson)
         {
             var rows = new List<Dictionary<string, string>>();
@@ -129,6 +734,22 @@ namespace ExportContractFindings
             }
 
             return rows;
+        }
+
+        private static string SerializeRows(List<Dictionary<string, string>> rows)
+        {
+            var normalizedRows = rows.Select(row =>
+            {
+                var normalized = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var column in CustomerColumns)
+                {
+                    normalized[column] = Get(row, column);
+                }
+
+                return normalized;
+            });
+
+            return JsonSerializer.Serialize(normalizedRows);
         }
 
         private static Dictionary<string, string> ParseObject(string json)
@@ -210,13 +831,13 @@ namespace ExportContractFindings
             var passCount = findings.Count(r => Get(r, "Result").Equals("Pass", StringComparison.OrdinalIgnoreCase));
             var flagCount = findings.Count(r => Get(r, "Result").Equals("Flag", StringComparison.OrdinalIgnoreCase));
             var notApplicableCount = findings.Count(r => Get(r, "Result").Equals("Not Applicable", StringComparison.OrdinalIgnoreCase));
-            var overallStatus = FirstNonEmpty(Get(summary, "overall_status"), CustomerOverallStatus(findings));
+            var overallStatus = CustomerOverallStatus(findings);
             var contractPackage = FirstNonEmpty(Get(summary, "contract_package"), Get(summary, "contract_batch_id"), Get(summary, "contractBatchId"), "Not specified");
             var created = FirstNonEmpty(Get(summary, "created"), DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss 'UTC'"));
             var documentsProcessed = FirstNonEmpty(Get(summary, "documents_processed"), sourceDocumentCount > 0 ? sourceDocumentCount.ToString() : "");
             var fieldsReviewed = FirstNonEmpty(Get(summary, "fields_reviewed"), $"{CountReviewedFields(findings)} field groups");
             var rulesEvaluated = FirstNonEmpty(Get(summary, "business_rules_evaluated"), findings.Count.ToString());
-            var resultSummary = FirstNonEmpty(Get(summary, "result_summary"), $"{passCount} Pass | {flagCount} Flag | {notApplicableCount} Not Applicable");
+            var resultSummary = $"{passCount} Pass | {flagCount} Flag | {notApplicableCount} Not Applicable";
 
             var rows = new List<IReadOnlyList<string>>
             {

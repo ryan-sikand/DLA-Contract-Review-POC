@@ -2,6 +2,27 @@
   "version": "2.0",
   "resources": [
     {
+      "resource": "entity",
+      "key": "73b82488-f560-f111-8fcb-002248a16d28",
+      "value": {
+        "name": {
+          "defaultValue": "DLADataService",
+          "isExpression": false,
+          "displayName": "Entity name"
+        },
+        "folderPath": {
+          "defaultValue": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a",
+          "isExpression": false,
+          "displayName": "Folder path"
+        }
+      },
+      "metadata": {
+        "bindingsVersion": "2.2",
+        "solutionsSupport": "true",
+        "scope": "folder"
+      }
+    },
+    {
       "resource": "index",
       "key": "DLA_Contract_Agent_Index",
       "value": {

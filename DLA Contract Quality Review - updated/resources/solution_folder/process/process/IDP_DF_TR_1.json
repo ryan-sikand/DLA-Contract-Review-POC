@@ -1,0 +1,79 @@
+{
+  "docVersion": "1.0.0",
+  "resource": {
+    "name": "IDP_DF_TR_1",
+    "kind": "process",
+    "type": "process",
+    "apiVersion": "orchestrator.uipath.com/v1",
+    "isOverridable": true,
+    "dependencies": [
+      {
+        "kind": "Package",
+        "name": "DLA.Contract.Quality.Review.process.IDP_DF_TR"
+      }
+    ],
+    "runtimeDependencies": [
+      {
+        "bindingType": "bucket",
+        "bindingKey": "ryan.sikand@uipath.com's workspace.DLA_Contract_Docs",
+        "bindingValues": {
+          "folderPath": {
+            "defaultValue": "ryan.sikand@uipath.com's workspace",
+            "isExpression": false,
+            "displayName": "Folder Path"
+          },
+          "name": {
+            "defaultValue": "DLA_Contract_Docs",
+            "isExpression": false,
+            "displayName": "Storage Bucket Name"
+          }
+        },
+        "bindingMetadata": {
+          "bindingsVersion": "2.2"
+        },
+        "resourceKind": "Bucket",
+        "resourceKey": "5f617789-bd75-4a8c-9bf8-b4dcf294a74d",
+        "resourceName": "DLA_Contract_Docs",
+        "folderKey": "90d1ef22-feca-4f37-aac7-d5b8a32b8d3a"
+      }
+    ],
+    "folders": [
+      {
+        "fullyQualifiedName": "solution_folder"
+      }
+    ],
+    "spec": {
+      "type": "Process",
+      "jobPriority": "Medium",
+      "jobRecording": "Disabled",
+      "duration": 40,
+      "frequency": 500,
+      "quality": 100,
+      "remoteControlAccess": "None",
+      "name": "IDP_DF_TR_1",
+      "package": {
+        "name": "DLA.Contract.Quality.Review.process.IDP_DF_TR",
+        "key": "DLA.Contract.Quality.Review.process.IDP_DF_TR:1.0.77"
+      },
+      "packageName": "DLA.Contract.Quality.Review.process.IDP_DF_TR",
+      "packageVersion": "1.0.77",
+      "entryPointUniqueId": "5899d16b-5207-4b37-bb64-f8b02bcfed8b",
+      "entryPointName": "Main.xaml",
+      "inputArgumentsSchemaV2": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"in_DftrDocumentPath\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": []\n}",
+      "outputArgumentsSchemaV2": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"out_ContractDataJson\": {\n      \"type\": \"string\"\n    }\n  }\n}",
+      "hiddenForAttendedUser": false,
+      "alwaysRunning": false,
+      "autoStartProcess": false,
+      "targetFrameworkValue": "Portable",
+      "retentionAction": "Delete",
+      "retentionPeriod": 30,
+      "staleRetentionAction": "Delete",
+      "staleRetentionPeriod": 180,
+      "entryPoints": "[{\"UniqueId\":\"5899d16b-5207-4b37-bb64-f8b02bcfed8b\",\"Path\":\"Main.xaml\",\"DisplayName\":null,\"InputArguments\":\"{\\n  \\\"type\\\": \\\"object\\\",\\n  \\\"properties\\\": {\\n    \\\"in_DftrDocumentPath\\\": {\\n      \\\"type\\\": \\\"string\\\"\\n    }\\n  },\\n  \\\"required\\\": []\\n}\",\"OutputArguments\":\"{\\n  \\\"type\\\": \\\"object\\\",\\n  \\\"properties\\\": {\\n    \\\"out_ContractDataJson\\\": {\\n      \\\"type\\\": \\\"string\\\"\\n    }\\n  }\\n}\",\"Type\":1,\"TargetRuntime\":null,\"ContentRoot\":null,\"DataVariation\":null,\"Id\":3933111}]",
+      "tags": []
+    },
+    "locks": [],
+    "key": "9e874b1d-6d1f-4693-8f4b-859a5e7b720e",
+    "files": []
+  }
+}

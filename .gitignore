@@ -18,3 +18,10 @@ tmp/
 **/.uipath/folders*.json
 **/dist/
 **/.env
+
+# UiPath generated project caches
+**/.objects/
+**/.tmh/
+**/.entities/*.zip
+**/Main.xaml.json
+**/.project/CodedBindingsMetadata.json

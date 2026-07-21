@@ -1,10 +1,9 @@
 {
   "docVersion": "1.0.0",
   "resource": {
-    "name": "IDP_SAAD_v2",
-    "kind": "package",
-    "apiVersion": "orchestrator.uipath.com/v1",
-    "projectKey": "95de3477-268f-48e4-81cc-d2030fb4cd71",
+    "name": "DLADataService",
+    "kind": "entity",
+    "apiVersion": "dataservice.uipath.com/v1",
     "isOverridable": true,
     "dependencies": [],
     "runtimeDependencies": [],
@@ -14,10 +13,12 @@
       }
     ],
     "spec": {
-      "name": "IDP_SAAD_v2"
+      "resourceJson": "",
+      "displayName": "",
+      "name": "DLADataService"
     },
     "locks": [],
-    "key": "2e233ac4-7af1-41a8-a696-dd48843a60f8",
+    "key": "d643701a-3eb4-43dd-8ec4-9ef5334cf049",
     "files": []
   }
 }

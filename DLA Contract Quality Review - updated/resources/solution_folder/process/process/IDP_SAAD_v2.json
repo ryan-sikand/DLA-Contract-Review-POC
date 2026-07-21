@@ -6,6 +6,7 @@
     "type": "process",
     "apiVersion": "orchestrator.uipath.com/v1",
     "projectKey": "95de3477-268f-48e4-81cc-d2030fb4cd71",
+    "isOverridable": true,
     "dependencies": [
       {
         "kind": "package",

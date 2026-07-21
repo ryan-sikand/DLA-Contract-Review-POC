@@ -4,8 +4,8 @@
   "entryPoints": [
     {
       "filePath": "/content/agent.json",
-      "type": "agent",
       "uniqueId": "bde5bfec-144d-48bc-991f-19576a1a80ee",
+      "type": "agent",
       "input": {
         "type": "object",
         "properties": {
@@ -28,11 +28,11 @@
         "properties": {
           "content": {
             "type": "string",
-            "description": "Strict JSON findings returned by the Contract Validation Agent."
+            "description": "Strict JSON Contract Quality Review Results summary with source records for the one-sheet workbook."
           },
           "excelReportRowsJson": {
             "type": "string",
-            "description": "Excel-ready findings rows as JSON for downstream reporting."
+            "description": "Customer-facing business rule rows for the Contract Quality Review Results workbook, including result summaries, data completeness notes, and source documents."
           },
           "excelFindingsFile": {
             "$ref": "#/definitions/job-attachment"
