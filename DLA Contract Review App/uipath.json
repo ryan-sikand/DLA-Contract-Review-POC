@@ -1,0 +1,8 @@
+{
+  "scope": "OR.Administration OR.Execution.Read OR.Jobs OR.Jobs.Read OR.Jobs.Write OR.Tasks OR.Tasks.Read OR.Tasks.Write PIMS DataFabric.Schema.Read DataFabric.Data.Read DataFabric.Data.Write",
+  "clientId": "35b7dae4-9806-49ef-bac6-5bba2010faff",
+  "orgName": "uipathlabs",
+  "tenantName": "Playground",
+  "baseUrl": "https://api.uipath.com",
+  "redirectUri": "https://uipathlabs.uipath.host/dla-contract-quality-review"
+}

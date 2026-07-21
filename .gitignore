@@ -6,3 +6,15 @@ bin/
 obj/
 node_modules/
 **/.local/
+dist/
+test-results/
+tmp/
+*.uis
+*.uip
+
+# UiPath coded app local output
+**/.uipath/*.nupkg
+**/.uipath/deploy*.json
+**/.uipath/folders*.json
+**/dist/
+**/.env
