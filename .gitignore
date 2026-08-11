@@ -1,4 +1,6 @@
 .codex-inspect/
+.codex-tmp/
+*.inspect.ndjson
 *.log
 *.tmp
 *.bak
